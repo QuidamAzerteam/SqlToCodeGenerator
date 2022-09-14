@@ -29,15 +29,11 @@ class Bean {
 		return $this->className . 'Dao';
 	}
 
-	public function getPhpClassFileContent(string $objectUtilsPrefix): string {
+	public function getPhpClassFileContent(): string {
 		$classBuilder = new PhpClassBuilder();
 		$classBuilder->basePackage = $this->basePackage;
 		$classBuilder->className = $this->className;
 		$classBuilder->namespace = $this->beanNamespace;
-		$classBuilder->imports = array(
-			"$objectUtilsPrefix\ObjectUtils",
-			"stdClass",
-		);
 
 		foreach ($this->properties as $property) {
 			$classBuilder->fieldBuilders[] = $property->getPhpFieldBuilder();
@@ -73,10 +69,6 @@ class Bean {
 		$functionParameter->name = 'stdClass';
 		$functionParameter->type = 'stdClass';
 		$functionBuilder->parameterBuilders[] = $functionParameter;
-
-		$functionLine = new PhpFunctionLineBuilder();
-		$functionLine->content = "return ObjectUtils::getFromStdClass(\$stdClass, self::class);";
-		$functionBuilder->lineBuilders[] = $functionLine;
 
 		$classBuilder->functionBuilders[] = $functionBuilder;
 
