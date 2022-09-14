@@ -25,9 +25,9 @@ class FromSqlCodeGenerator {
 	 * @param string $password For {@see PDO} connection only
 	 * @param string $bdd Database to generate sources from
 	 * @param string $basePackage Root package. For instance, if it's `MyPackage`, generated code will have as namespace `MyPackage\{@see $genDirName}\{@see $beanDirName}`
-	 * @param string[] $tablesToIgnore SQL tables to ignore
 	 * @param string $phpDirName Relative from root directory
-	 * @param string $jsDirName Relative from root directory
+	 * @param string|null $jsDirName Relative from root directory. Set as null to avoid generating JS sources
+	 * @param string[] $tablesToIgnore SQL tables to ignore
 	 * @param string $genDirName For PHP and JS sources
 	 * @param string $beanDirName
 	 * @param string $enumsDirName
@@ -41,9 +41,9 @@ class FromSqlCodeGenerator {
 			string $password,
 			private readonly string $bdd,
 			private readonly string $basePackage,
-			private readonly array $tablesToIgnore,
 			private readonly string $phpDirName,
-			private readonly string $jsDirName,
+			private readonly ?string $jsDirName = null,
+			private readonly array $tablesToIgnore = array(),
 			private readonly string $genDirName = 'gen',
 			private readonly string $beanDirName = 'bean',
 			private readonly string $enumsDirName = 'enums',
@@ -259,8 +259,10 @@ class FromSqlCodeGenerator {
 		$this->createDir($phpGenPath . '/' . $this->daoDirName);
 		$this->createDir($phpGenPath . '/' . $this->enumsDirName);
 
-		if ($this->testDirName !== null) {
-			$testsGenPath = $this->testDirName . '/' . $this->genDirName;
+		$testsGenPath = $this->testDirName !== null
+				? $this->testDirName . '/' . $this->genDirName 
+				: null;
+		if ($testsGenPath !== null) {
 			$this->recursiveDelete($testsGenPath);
 			$this->createDir($testsGenPath);
 			$this->createDir($testsGenPath . '/' . $this->beanDirName);
@@ -268,11 +270,15 @@ class FromSqlCodeGenerator {
 			$this->createDir($testsGenPath . '/' . $this->enumsDirName);
 		}
 
-		$jsGenPath = $this->jsDirName . '/' . $this->genDirName;
-		$this->recursiveDelete($jsGenPath);
-		$this->createDir($jsGenPath);
-		$this->createDir($jsGenPath . '/' . $this->beanDirName);
-		$this->createDir($jsGenPath . '/' . $this->enumsDirName);
+		$jsGenPath = $this->jsDirName !== null
+				? $this->jsDirName . '/' . $this->genDirName
+				: null;
+		if ($jsGenPath !== null) {
+			$this->recursiveDelete($jsGenPath);
+			$this->createDir($jsGenPath);
+			$this->createDir($jsGenPath . '/' . $this->beanDirName);
+			$this->createDir($jsGenPath . '/' . $this->enumsDirName);
+		}
 
 		echo 'Beans found: ' . implode(', ', array_keys($beansByClassName)) . "\n";
 
@@ -286,8 +292,7 @@ class FromSqlCodeGenerator {
 					$bean->getPhpDaoFileContent()
 			);
 
-			if ($this->testDirName !== null) {
-				$testsGenPath = $this->testDirName . '/' . $this->genDirName;
+			if ($testsGenPath !== null) {
 				file_put_contents(
 						$testsGenPath . '/' . $this->beanDirName . '/' . $bean->className . 'Test.php',
 						$bean->getPhpTestFileContent($this->testDirName)
@@ -298,10 +303,12 @@ class FromSqlCodeGenerator {
 				);
 			}
 
-			file_put_contents(
-					$jsGenPath . '/' . $this->beanDirName . '/' . $bean->className . '.js',
-					$bean->getJsClassFileContent()
-			);
+			if ($jsGenPath !== null) {
+				file_put_contents(
+						$jsGenPath . '/' . $this->beanDirName . '/' . $bean->className . '.js',
+						$bean->getJsClassFileContent()
+				);
+			}
 		}
 
 		echo 'Enums found: ' . implode(', ', array_map(static fn (Enum $enum) => $enum->name, $enums)) . "\n";
@@ -312,18 +319,19 @@ class FromSqlCodeGenerator {
 					$enum->getPhpFileContent()
 			);
 
-			if ($this->testDirName !== null) {
-				$testsGenPath = $this->testDirName . '/' . $this->genDirName;
+			if ($testsGenPath !== null) {
 				file_put_contents(
 						$testsGenPath . '/' . $this->enumsDirName . '/' . $enum->name . 'Test.php',
 						$enum->getPhpTestFileContent($this->testDirName)
 				);
 			}
 
-			file_put_contents(
-					$jsGenPath . '/' . $this->enumsDirName . '/' . $enum->name . '.js',
-					$enum->getJsFileContent()
-			);
+			if ($jsGenPath !== null) {
+				file_put_contents(
+						$jsGenPath . '/' . $this->enumsDirName . '/' . $enum->name . '.js',
+						$enum->getJsFileContent()
+				);
+			}
 		}
 
 		die();
