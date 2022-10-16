@@ -4,11 +4,11 @@ namespace SqlToCodeGenerator\sql;
 
 use RuntimeException;
 
-class SqlUtils {
+abstract class SqlUtils {
 
 	private static PdoContainer $pdoContainer;
 
-	private function __construct() {}
+	private final function __construct() {}
 
 	public static function initPdo(
 			string $dbName,
@@ -22,21 +22,10 @@ class SqlUtils {
 
 	public static function getPdoContainer(): PdoContainer {
 		if (!isset(self::$pdoContainer)) {
-			throw new RuntimeException('PDO is null. Call init method first');
+			throw new RuntimeException('PDO is null. Call initPdo method first');
 		}
 
 		return self::$pdoContainer;
-	}
-
-	public static function getArrayVarAsString($var): string {
-		$arrayVar = substr($var, 0, -1);
-		$lastCharacter = substr($var, -1);
-		$arrayVar .= match ($lastCharacter) {
-			'y' => 'ies',
-			's' => $lastCharacter . 'List',
-			default => $lastCharacter . 's',
-		};
-		return $arrayVar;
 	}
 
 }

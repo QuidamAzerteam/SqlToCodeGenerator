@@ -44,7 +44,7 @@ class PdoContainer {
 					$this->user,
 					$this->password,
 					array(
-							PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+						PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 					),
 			);
 			$result = $this->pdo->query("SHOW VARIABLES LIKE 'wait_timeout'")->fetchAll(PDO::FETCH_ASSOC);

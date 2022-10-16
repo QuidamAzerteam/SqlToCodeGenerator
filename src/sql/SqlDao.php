@@ -168,6 +168,12 @@ abstract class SqlDao {
 		return implode('', $upperCaseExplodedTableName);
 	}
 
+	/**
+	 * Set primary key to what exists in database bases on unique key(s)
+	 * @param string[] $uniqueFields
+	 * @param array $elements
+	 * @return void
+	 */
 	protected function restoreIds(
 			array $uniqueFields,
 			array $elements
