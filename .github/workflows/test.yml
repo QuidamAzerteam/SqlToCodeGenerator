@@ -4,7 +4,7 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - main
-name: Run tests
+name: Tests
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
