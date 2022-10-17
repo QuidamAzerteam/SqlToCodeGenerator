@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\sqlToMetaCode\dao;
 
+use DateTime;
 use PDO;
 use SqlToCodeGenerator\codeGeneration\metadata\Bean;
 use SqlToCodeGenerator\sql\PdoContainer;
@@ -61,9 +62,9 @@ class SqlToMetaCodeDao {
 						indexLength: $sqlRow['INDEX_LENGTH'],
 						dataFree: $sqlRow['DATA_FREE'],
 						autoIncrement: $sqlRow['AUTO_INCREMENT'],
-						createTime: $sqlRow['CREATE_TIME'],
-						updateTime: $sqlRow['UPDATE_TIME'],
-						checkTime: $sqlRow['CHECK_TIME'],
+						createTime: $sqlRow['CREATE_TIME'] ? new DateTime($sqlRow['CREATE_TIME']) : null,
+						updateTime: $sqlRow['UPDATE_TIME'] ? new DateTime($sqlRow['UPDATE_TIME']) : null,
+						checkTime: $sqlRow['CHECK_TIME'] ? new DateTime($sqlRow['CHECK_TIME']) : null,
 						tableCollation: $sqlRow['TABLE_COLLATION'],
 						checksum: $sqlRow['CHECKSUM'],
 						createOptions: $sqlRow['CREATE_OPTIONS'],
@@ -82,7 +83,7 @@ class SqlToMetaCodeDao {
 	public function getColumns(array $fromTables): array {
 		$fromTablesSql = '';
 		if ($this->tablesToIgnore) {
-			$fromTablesSql = 'AND t.TABLE_SCHEMA IN ("'
+			$fromTablesSql = 'AND c.TABLE_NAME IN ("'
 					. implode(
 							'", "',
 							array_map(
@@ -137,7 +138,6 @@ class SqlToMetaCodeDao {
 	public function getKeyColumnUsages(): array {
 		$statement = $this->pdoContainer->getPdo()->prepare("
 			SELECT DISTINCT kcu.*
-
 			FROM information_schema.COLUMNS c
 				INNER JOIN information_schema.TABLES t ON t.TABLE_NAME = c.TABLE_NAME
 				INNER JOIN information_schema.TABLE_CONSTRAINTS tc ON tc.TABLE_SCHEMA = c.TABLE_SCHEMA

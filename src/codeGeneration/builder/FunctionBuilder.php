@@ -161,10 +161,10 @@ class FunctionBuilder {
 		$isFinalString = $this->isFinal ? 'final ' : '';
 		$isStaticString = $this->isStatic ? ' static' : '';
 
-		$functionDeclaration = $baseIndentation . "$isFinalString{$this->visibility->value}$isStaticString function $this->name(";
+		$fileContent .= $baseIndentation . "$isFinalString{$this->visibility->value}$isStaticString function $this->name(";
 
 		if ($this->parameterBuilders) {
-			$functionDeclaration .= "\n";
+			$functionDeclaration = "\n";
 			foreach ($this->parameterBuilders as $parameterIndex => $parameterBuilder) {
 				$functionDeclaration .= $baseIndentation . "\t" . $parameterBuilder->getPhpFileContent();
 				if ($parameterIndex < count($this->parameterBuilders) - 1) {
@@ -173,9 +173,10 @@ class FunctionBuilder {
 					$functionDeclaration .= "\n";
 				}
 			}
+			$fileContent .= "$functionDeclaration$baseIndentation";
 		}
 
-		$fileContent .= "$functionDeclaration): $this->returnType {\n";
+		$fileContent .= "): $this->returnType {\n";
 
 		$increment = substr_count($baseIndentation, "\t") + 1;
 		foreach ($this->lines as $lineBuilder) {

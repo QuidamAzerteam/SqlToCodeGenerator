@@ -18,7 +18,9 @@ class EnumBuilderJsTest extends TestCase {
 		$fileBuilder->addFields('test');
 		$expected = "export class name {
 
-	test: 1,
+	static get test() {
+		return 1;
+	}
 
 }
 ";

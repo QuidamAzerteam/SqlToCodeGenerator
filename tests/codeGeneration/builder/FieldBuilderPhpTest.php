@@ -161,7 +161,7 @@ class FieldBuilderPhpTest extends TestCase {
 				->setDefaultValue('hello');
 
 		$expected = 'final ' . $fielBuilder->getVisibility()->value
-				. ' const $' . $fielBuilder->getFieldName() . ' = hello;';
+				. ' const ' . $fielBuilder->getFieldName() . ' = hello;';
 		$this->assertSame(
 				$expected,
 				$fielBuilder->getPhpFileContent('')

@@ -163,7 +163,7 @@ class CodeGenerator {
 				if ($property->enum !== null) {
 					$property->enum->basePackage = $this->basePackage;
 					$property->enum->namespace = "$this->genDirName\\$this->enumsDirName";
-					if ($property->defaultValueAsString !== null) {
+					if ($property->defaultValueAsString !== null && $property->defaultValueAsString !== 'null') {
 						// Watch out, in local, default value have no "'" but in prod they do
 						// defaultValueAsString when Enum is string of the Enum
 						$property->defaultValueAsString = '\\' . $this->basePackage
