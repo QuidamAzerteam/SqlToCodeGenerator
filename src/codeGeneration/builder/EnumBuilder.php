@@ -115,7 +115,7 @@ class EnumBuilder extends FileBuilder {
 		$fileContent = '';
 
 		foreach ($this->fields as $index => $field) {
-			$fileContent .= "	$field: " . ($index + 1) . ",";
+			$fileContent .= "	static get $field() {\n		return " . ($index + 1) . ";\n	}";
 			if ($index !== count($this->fields) - 1) {
 				$fileContent .= "\n";
 			}

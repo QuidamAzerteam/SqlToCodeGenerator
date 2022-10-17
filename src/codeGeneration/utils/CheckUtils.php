@@ -46,7 +46,7 @@ abstract class CheckUtils {
 		}
 		// Regex taken from https://stackoverflow.com/a/12011255/5649527
 		if ($phpType !== '' && preg_match(
-				'/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/',
+				'/^[\\\\]?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/',
 				$phpType
 		) !== 1) {
 			throw new LogicException(htmlentities($phpType) . ' does not match a valid PHP variable');

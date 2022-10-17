@@ -42,19 +42,19 @@ abstract class SqlToMetaCodeUtils {
 		$beansBySqlTable = array();
 		foreach ($columns as $column) {
 			$table = $tablesByTableName[$column->tableName];
-			$keyColumnUsages = $keyColumnUsageListsByTableName[$column->tableName] ?? array();
+			$tableKeyColumnUsages = $keyColumnUsageListsByTableName[$column->tableName] ?? array();
 
 			$bean = new Bean();
 			$bean->sqlTable = $table->tableName;
-			foreach ($keyColumnUsages as $keyColumnUsage) {
-				$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName]
+			foreach ($tableKeyColumnUsages as $keyColumnUsage) {
+				$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName][]
 						= $keyColumnUsage->columnName;
 			}
 			$bean = $beansBySqlTable[$bean->sqlTable] ?? $bean;
 			$beansBySqlTable[$bean->sqlTable] = $bean;
 
 			$property = new BeanProperty();
-
+			$bean->properties[] = $property;
 			$property->sqlName = $column->columnName;
 			$property->sqlComment = $column->columnComment;
 			$property->belongsToBean = $bean;
@@ -98,7 +98,7 @@ abstract class SqlToMetaCodeUtils {
 
 					break;
 				case BeanPropertyType::BOOL:
-					$property->defaultValueAsString =  match ($defaultValue) {
+					$property->defaultValueAsString = match ($defaultValue) {
 						'0' => 'false',
 						'1' => 'true',
 						null => $property->isNullable ? 'null' : null,
@@ -108,44 +108,28 @@ abstract class SqlToMetaCodeUtils {
 				case BeanPropertyType::OBJECT:
 					break;
 			}
+		}
 
-			foreach ($keyColumnUsages as $keyColumnUsage) {
-				if (
-						$keyColumnUsage->tableSchema === $column->tableSchema
-						&&  $keyColumnUsage->tableName == $column->tableName
-						&&  $keyColumnUsage->columnName == $column->columnName
-				) {
-					$fkBean = new ForeignBean();
-					$bean->foreignBeans[] = $fkBean;
+		foreach ($keyColumnUsages as $keyColumnUsage) {
+			$bean = $beansBySqlTable[$keyColumnUsage->tableName];
+			$property = $beanPropertiesByUniqueKey[$keyColumnUsage->tableName . '_' . $keyColumnUsage->columnName];
 
-					$fkBean->toBean = new Bean();
-					$fkBean->toBean->sqlTable = $keyColumnUsage->referencedTableName;
-					$fkBean->toBean->colNamesByUniqueConstraintName
-							= $colNamesByUniqueConstraintNameByTableName[$keyColumnUsage->referencedTableName] ?? [];
-					$fkBean->toBean = $beansBySqlTable[$fkBean->toBean->sqlTable] ?? $fkBean->toBean;
-					$beansBySqlTable[$fkBean->toBean->sqlTable] = $fkBean->toBean;
+			$onBean = $beansBySqlTable[$keyColumnUsage->referencedTableName];
+			$onProperty = $beanPropertiesByUniqueKey[$keyColumnUsage->referencedTableName . '_' . $keyColumnUsage->referencedColumnName];
 
-					$fkBean->withProperty = $property;
+			$fkBean = new ForeignBean();
+			$bean->foreignBeans[$bean->sqlTable . '_' . $onBean->sqlTable . '_' . $onProperty->sqlName] = $fkBean;
 
-					$fkBean->onProperty = new BeanProperty();
-					$fkBean->onProperty->sqlName = $keyColumnUsage->referencedColumnName;
-					$fkBean->onProperty->belongsToBean = $fkBean->toBean;
-					$fkBean->onProperty = $beanPropertiesByUniqueKey[$fkBean->onProperty->getUniqueKey()] ?? $fkBean->onProperty;
-					$beanPropertiesByUniqueKey[$fkBean->onProperty->getUniqueKey()] = $fkBean->onProperty;
+			$fkBean->toBean = $onBean;
+			$fkBean->withProperty = $property;
+			$fkBean->onProperty = $onProperty;
 
-					$reverseFkBean = new ForeignBean();
-					$reverseFkBean->isArray = true;
-					$reverseFkBean->toBean = $bean;
-					$reverseFkBean->onProperty = $fkBean->withProperty;
-					$reverseFkBean->withProperty = $fkBean->onProperty;
-					$fkBean->toBean->foreignBeans[] = $reverseFkBean;
-				}
-
-				$property = $beanPropertiesByUniqueKey[$property->getUniqueKey()] ?? $property;
-				$beanPropertiesByUniqueKey[$property->getUniqueKey()] = $property;
-
-				$bean->properties[] = $property;
-			}
+			$reverseFkBean = new ForeignBean();
+			$reverseFkBean->isArray = true;
+			$reverseFkBean->toBean = $bean;
+			$reverseFkBean->onProperty = $fkBean->withProperty;
+			$reverseFkBean->withProperty = $fkBean->onProperty;
+			$fkBean->toBean->foreignBeans[$onBean->sqlTable . '_' . $bean->sqlTable . '_' . $onProperty->sqlName] = $reverseFkBean;
 		}
 
 		return $beansBySqlTable;

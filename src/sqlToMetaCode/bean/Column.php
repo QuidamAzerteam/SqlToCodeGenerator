@@ -19,7 +19,7 @@ class Column {
 			public readonly ?int $numericScale,
 			public readonly ?int $datetimePrecision,
 			public readonly ?string $characterSetName,
-			public readonly string $collationName,
+			public readonly ?string $collationName,
 			public readonly string $columnType,
 			public readonly string $columnKey,
 			public readonly string $extra,
