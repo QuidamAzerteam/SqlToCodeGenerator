@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches:
-      - main
 
 jobs:
   unit-tests:
@@ -36,7 +34,7 @@ jobs:
 
       - name: 🔍 SonarCloud scan
         # Because only team can use secret
-        if: ${{ github.event.pull_request.user.login == 'QuidamAzerteam'}}
+        if: "! github.event.pull_request.head.repo.fork "
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
