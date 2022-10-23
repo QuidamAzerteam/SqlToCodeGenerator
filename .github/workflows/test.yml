@@ -37,7 +37,7 @@ jobs:
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' coverage.xml
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' junit.xml
 
-      - run: echo ${{ github.repository_owner }}
+      - run: echo ${{ github.ref_name }}
 
       - name: 🔍 SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
