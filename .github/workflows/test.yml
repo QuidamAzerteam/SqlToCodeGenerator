@@ -1,4 +1,4 @@
-name: Execute tests & send reports to SonarCloud
+name: Tests
 run-name: "Scanning PR #${{ github.event.number }}"
 
 on:
