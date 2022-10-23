@@ -1,12 +1,12 @@
 # SqlToCodeGenerator
 SQL to PHP and JS code generation
 
-[![Latest Stable Version](https://poser.pugx.org/quidamazerty/sql-to-code-generator/v/stable.png)](https://packagist.org/packages/quidamazerty/sql-to-code-generator)
-[![Tests](https://github.com/QuidamAzerty/SqlToCodeGenerator/actions/workflows/test.yml/badge.svg)](https://github.com/QuidamAzerty/SqlToCodeGenerator/actions/workflows/test.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SqlToCodeGenerator&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=SqlToCodeGenerator)
+[![Latest Stable Version](https://poser.pugx.org/quidamazerteam/sql-to-code-generator/v/stable.png)](https://packagist.org/packages/quidamazerteam/sql-to-code-generator)
+[![Tests](https://github.com/QuidamAzerteam/SqlToCodeGenerator/actions/workflows/test.yml/badge.svg)](https://github.com/QuidamAzerteam/SqlToCodeGenerator/actions/workflows/test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SqlToCodeGenerator&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=QuidamAzerteam_SqlToCodeGenerator)
 
 # How to install
-`composer require quidamazerty/sql-to-code-generator`
+`composer require quidamazerteam/sql-to-code-generator`
 
 # How to use
 Instantiate `SqlToCodeGenerator\CodeGenerator` and call `generate()` method. <br/>

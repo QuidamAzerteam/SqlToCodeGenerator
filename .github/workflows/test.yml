@@ -1,5 +1,4 @@
 name: Tests
-run-name: "Scanning PR #${{ github.event.number }}"
 
 on:
   workflow_dispatch:
