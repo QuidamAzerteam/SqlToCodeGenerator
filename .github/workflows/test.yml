@@ -37,7 +37,7 @@ jobs:
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' coverage.xml
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' junit.xml
 
-      - run: echo ${{ secrets.SONAR_TOKEN }} | sed 's/./& /g'
+      - run: echo ${{ github.head_ref }}
 
       - name: 🔍 SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
