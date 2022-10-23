@@ -6,9 +6,6 @@ on:
     types: [opened, synchronize, reopened]
     branches:
       - main
-  push:
-    branches:
-      - main
 
 jobs:
   unit-tests:
@@ -37,7 +34,7 @@ jobs:
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' coverage.xml
           sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace@g' junit.xml
 
-      - run: echo ${{ github.ref_name }}
+      - run: echo ${{ github.event.pull_request.user.login }}
 
       - name: 🔍 SonarCloud scan
         uses: SonarSource/sonarcloud-github-action@master
