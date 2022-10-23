@@ -14,8 +14,8 @@ jobs:
     steps:
       - run: echo ${{ github.event_name }}
       - run: echo ${{ github.event.pull_request.head.repo.fork }}
-      - run: echo ${{ github.event.pull_request.head.repo.fork == false }}
-      - run: echo ${{ github.event.pull_request.head.repo.fork == 'false' }}
+      - run: echo ${{ github.event.pull_request.head.repo.fork == true }}
+      - run: echo ${{ github.event.pull_request.head.repo.fork == 'true' }}
 
       - name: 🚚 Get latest code
         uses: actions/checkout@v2.3.2
