@@ -1,10 +1,25 @@
+<?xml version="1.0"?>
 <phpunit
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/6.3/phpunit.xsd"
 		bootstrap="../vendor/autoload.php"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
 >
-	<testsuite name='All php files ending with Test.php'>
-		<directory suffix='Test.php'>./</directory>
+
+	<coverage pathCoverage="true">
+		<include>
+			<directory suffix=".php">../src</directory>
+		</include>
+		<report>
+			<clover outputFile="generatedReports/coverage.xml"/>
+		</report>
+	</coverage>
+
+	<testsuite name="All test files">
+		<directory>./</directory>
 	</testsuite>
+
+	<logging>
+		<junit outputFile="generatedReports/junit.xml"/>
+	</logging>
 
 </phpunit>
