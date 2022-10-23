@@ -1,6 +1,7 @@
-vendor/
 .idea/
+.scannerwork/
 composer.phar
-tests/.phpunit.result.cache
 gen/
+tests/.phpunit.result.cache
 tests/generatedReports/
+vendor/
