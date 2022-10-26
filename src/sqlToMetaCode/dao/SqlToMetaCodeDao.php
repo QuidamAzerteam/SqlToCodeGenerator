@@ -145,8 +145,8 @@ class SqlToMetaCodeDao {
 				INNER JOIN information_schema.KEY_COLUMN_USAGE kcu ON kcu.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
 
 			WHERE c.TABLE_SCHEMA = :bdd
+				AND kcu.TABLE_SCHEMA = c.TABLE_SCHEMA
 				{$this->getTableNameNoIntSql('t.TABLE_NAME')}
-				{$this->getTableNameNoIntSql('kcu.REFERENCED_TABLE_NAME')}
 		");
 		$statement->bindValue(':bdd', $this->bdd);
 		$statement->execute();
