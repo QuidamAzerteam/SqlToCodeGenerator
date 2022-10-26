@@ -39,7 +39,9 @@ abstract class SqlToMetaCodeUtils {
 			$keyColumnUsageListsByTableName[$keyColumnUsage->tableName][] = $keyColumnUsage;
 		}
 
+		// Convert $columns to beans
 		$beansBySqlTable = array();
+		$beanPropertiesByUniqueKey = array();
 		foreach ($columns as $column) {
 			$table = $tablesByTableName[$column->tableName];
 			$tableKeyColumnUsages = $keyColumnUsageListsByTableName[$column->tableName] ?? array();
@@ -47,8 +49,11 @@ abstract class SqlToMetaCodeUtils {
 			$bean = new Bean();
 			$bean->sqlTable = $table->tableName;
 			foreach ($tableKeyColumnUsages as $keyColumnUsage) {
-				$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName][]
-						= $keyColumnUsage->columnName;
+				// Do not put foreign keys
+				if ($keyColumnUsage->referencedTableSchema === null) {
+					$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName][]
+							= $keyColumnUsage->columnName;
+				}
 			}
 			$bean = $beansBySqlTable[$bean->sqlTable] ?? $bean;
 			$beansBySqlTable[$bean->sqlTable] = $bean;
@@ -110,7 +115,11 @@ abstract class SqlToMetaCodeUtils {
 			}
 		}
 
+		// Build link between beans
 		foreach ($keyColumnUsages as $keyColumnUsage) {
+			if ($keyColumnUsage->referencedTableSchema === null) {
+				continue;
+			}
 			$bean = $beansBySqlTable[$keyColumnUsage->tableName];
 			$property = $beanPropertiesByUniqueKey[$keyColumnUsage->tableName . '_' . $keyColumnUsage->columnName];
 
