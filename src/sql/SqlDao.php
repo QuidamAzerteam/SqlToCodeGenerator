@@ -178,6 +178,9 @@ abstract class SqlDao {
 			array $uniqueFields,
 			array $elements
 	): void {
+		if (!$elements) {
+			return;
+		}
 		$uniqueKeyFromElement = static function ($element) use ($uniqueFields) {
 			return implode('_', array_map(
 					static function ($uniqueField) use ($element) {

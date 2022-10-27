@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\sqlToMetaCode;
 
+use LogicException;
 use SqlToCodeGenerator\codeGeneration\metadata\Bean;
 use SqlToCodeGenerator\codeGeneration\metadata\BeanProperty;
 use SqlToCodeGenerator\codeGeneration\metadata\BeanPropertyColKey;
@@ -44,17 +45,9 @@ abstract class SqlToMetaCodeUtils {
 		$beanPropertiesByUniqueKey = array();
 		foreach ($columns as $column) {
 			$table = $tablesByTableName[$column->tableName];
-			$tableKeyColumnUsages = $keyColumnUsageListsByTableName[$column->tableName] ?? array();
 
 			$bean = new Bean();
 			$bean->sqlTable = $table->tableName;
-			foreach ($tableKeyColumnUsages as $keyColumnUsage) {
-				// Do not put foreign keys
-				if ($keyColumnUsage->referencedTableSchema === null) {
-					$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName][]
-							= $keyColumnUsage->columnName;
-				}
-			}
 			$bean = $beansBySqlTable[$bean->sqlTable] ?? $bean;
 			$beansBySqlTable[$bean->sqlTable] = $bean;
 
@@ -112,6 +105,32 @@ abstract class SqlToMetaCodeUtils {
 				case BeanPropertyType::JSON:
 				case BeanPropertyType::OBJECT:
 					break;
+			}
+		}
+
+		foreach ($beansBySqlTable as $bean) {
+			$tableKeyColumnUsages = $keyColumnUsageListsByTableName[$bean->sqlTable] ?? array();
+
+			foreach ($tableKeyColumnUsages as $keyColumnUsage) {
+				$matchingProperty = null;
+				foreach ($bean->properties as $property) {
+					if ($keyColumnUsage->columnName === $property->sqlName) {
+						$matchingProperty = $property;
+						break;
+					}
+				}
+				if ($matchingProperty === null) {
+					throw new LogicException('Key column usage on unknown property: ' . $keyColumnUsage->constraintName);
+				}
+
+				// Do not put foreign keys
+				if (
+						$keyColumnUsage->referencedTableSchema === null
+						&& $matchingProperty->columnKey !== BeanPropertyColKey::PRI
+				) {
+					$bean->colNamesByUniqueConstraintName[$keyColumnUsage->constraintName][]
+							= $keyColumnUsage->columnName;
+				}
 			}
 		}
 
