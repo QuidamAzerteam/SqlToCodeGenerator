@@ -159,7 +159,7 @@ class FieldBuilder {
 	public function getPhpFileContent(string $prependLinesBy): string {
 		$fileContent = '';
 
-		$defaultAsString = $this->defaultValue ? ' = ' . $this->defaultValue : '';
+		$defaultAsString = $this->defaultValue !== null ? ' = ' . $this->defaultValue : '';
 		$phpTypeWithNullableString = $this->phpType;
 		if ($this->isNullable) {
 			$phpTypeWithNullableString .= '|null';
@@ -173,7 +173,7 @@ class FieldBuilder {
 			if ($this->isNullable) {
 				throw new LogicException('A nullable constant have no sense');
 			}
-			if (!$this->defaultValue) {
+			if ($this->defaultValue === null) {
 				throw new LogicException('A const without a default value will always be empty');
 			}
 			array_push(
@@ -214,7 +214,7 @@ class FieldBuilder {
 
 		$fileContent = $prependLinesBy . "/** @type " . '{' . $jsTypeWithNullableString . '}' . " */\n";
 		$fileContent .= $prependLinesBy . "$this->fieldName";
-		if ($this->defaultValue) {
+		if ($this->defaultValue !== null) {
 			$fileContent .= " = $this->defaultValue";
 		}
 		if ($this->comments) {
