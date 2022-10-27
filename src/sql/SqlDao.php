@@ -178,10 +178,15 @@ abstract class SqlDao {
 			array $uniqueFields,
 			array $elements
 	): void {
+		if (!$elements) {
+			return;
+		}
 		$uniqueKeyFromElement = static function ($element) use ($uniqueFields) {
 			return implode('_', array_map(
 					static function ($uniqueField) use ($element) {
-						return $element->$uniqueField;
+						return $element->$uniqueField instanceof BackedEnum
+								? $element->$uniqueField->value
+								: $element->$uniqueField;
 					},
 					$uniqueFields
 			));
@@ -195,7 +200,9 @@ abstract class SqlDao {
 			$wheres = array();
 			foreach ($uniqueFields as $uniqueField) {
 				$fieldAsSql = static::getSqlColFromField($uniqueField);
-				$value = $element->$uniqueField;
+				$value = $element->$uniqueField instanceof BackedEnum
+						? $element->$uniqueField->value
+						: $element->$uniqueField;
 				$wheres[] = "`$fieldAsSql` = '$value'";
 			}
 			$allWheres[] = implode(' AND ', $wheres);
