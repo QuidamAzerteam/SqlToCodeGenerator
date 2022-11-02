@@ -10,7 +10,7 @@ abstract class SqlUtils {
 
 	private final function __construct() {}
 
-	public static function initPdo(
+	public static function initFromScratch(
 			string $dbName,
 			string $host,
 			string $port,
@@ -20,9 +20,13 @@ abstract class SqlUtils {
 		self::$pdoContainer = new PdoContainer($dbName, $host, $port, $user, $password);
 	}
 
+	public static function initFromPdoContainer(PdoContainer $pdoContainer): void {
+		self::$pdoContainer = $pdoContainer;
+	}
+
 	public static function getPdoContainer(): PdoContainer {
 		if (!isset(self::$pdoContainer)) {
-			throw new RuntimeException('PDO is null. Call initPdo method first');
+			throw new RuntimeException('PDO is null. Call an init method method first');
 		}
 
 		return self::$pdoContainer;
