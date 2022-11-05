@@ -3,6 +3,7 @@
 namespace SqlToCodeGenerator\codeGeneration\builder;
 
 use LogicException;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
 use SqlToCodeGenerator\codeGeneration\enums\Visibility;
 use SqlToCodeGenerator\codeGeneration\utils\CheckUtils;
 
@@ -28,7 +29,8 @@ class FieldBuilder {
 			private bool $isNullable = false,
 			private bool $isConst = false,
 			private ?string $customTypeHint = null,
-			private array $comments = array()
+			private array $comments = array(),
+			private ClassFieldEnum|null $classFieldEnum = null
 	) {
 		CheckUtils::checkPhpFieldName($fieldName);
 		CheckUtils::checkPhpType($phpType);
@@ -160,6 +162,11 @@ class FieldBuilder {
 		return $this;
 	}
 
+	public function setClassFieldEnum(ClassFieldEnum|null $classFieldEnum): static {
+		$this->classFieldEnum = $classFieldEnum;
+		return $this;
+	}
+
 	public function getPhpFileContent(string $prependLinesBy): string {
 		$fileContent = '';
 
@@ -172,6 +179,11 @@ class FieldBuilder {
 		if ($this->customTypeHint) {
 			$fileContent .= $prependLinesBy . "/** @type $this->customTypeHint */\n";
 		}
+
+		if ($this->classFieldEnum !== null) {
+			$fileContent .= $prependLinesBy . "#[ClassField(ClassFieldEnum::{$this->classFieldEnum->name})]\n";
+		}
+
 		$varParts = array();
 		if ($this->isConst) {
 			if ($this->isNullable) {

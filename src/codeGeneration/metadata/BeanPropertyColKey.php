@@ -2,6 +2,8 @@
 
 namespace SqlToCodeGenerator\codeGeneration\metadata;
 
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
+
 /**
  * {@link https://dev.mysql.com/doc/refman/5.7/en/information-schema-columns-table.html}
  * Search COLUMN_KEY
@@ -28,6 +30,14 @@ enum BeanPropertyColKey {
 			self::PRI => 'Primary',
 			self::UNI => 'Unique',
 			self::MUL => '',
+		};
+	}
+
+	public function toClassFieldEnum(): ClassFieldEnum|null {
+		return match ($this) {
+			self::PRI => ClassFieldEnum::PRIMARY,
+			self::UNI => ClassFieldEnum::UNIQUE,
+			self::MUL => null,
 		};
 	}
 
