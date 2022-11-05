@@ -4,6 +4,7 @@ namespace SqlToCodeGenerator\sql;
 
 use BackedEnum;
 use DateTime;
+use Exception;
 use LogicException;
 use PDO;
 use PDOException;
@@ -11,6 +12,8 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionObject;
 use ReflectionProperty;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassField;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
 
 abstract class SqlDao {
 
@@ -65,6 +68,10 @@ abstract class SqlDao {
 
 	public function foundRows(): int {
 		return $this->getPdo()->query('SELECT FOUND_ROWS()')->fetchColumn();
+	}
+
+	public function lastInsertedId(): int {
+		return $this->getPdo()->lastInsertId();
 	}
 
 	public function fetchFromQuery(string $query): array {
@@ -218,11 +225,12 @@ abstract class SqlDao {
 
 	abstract protected function getSqlColFromField(string $field): string;
 
-	public function saveElements(array $elements): void {
-		$table = $this->getTable();
-
+	/**
+	 * @return ReflectionProperty[]
+	 */
+	private function getReflectionProperties(): array {
 		$reflectionClass = new ReflectionClass($this->getClass());
-		$reflectionProperties = array_filter(
+		return array_filter(
 				$reflectionClass->getProperties(ReflectionProperty::IS_PUBLIC),
 				static function (ReflectionProperty $reflectionProperty) {
 					$name = $reflectionProperty->getType()?->getName();
@@ -246,6 +254,126 @@ abstract class SqlDao {
 					return (new ReflectionClass($name))->isEnum();
 				}
 		);
+	}
+
+	public function updateItem(mixed $item): void {
+		$table = $this->getTable();
+
+		$primaryReflectionProperty = null;
+		$sqlSetValues = array();
+		foreach ($this->getReflectionProperties() as $reflectionProperty) {
+			if ($this->isReflectionPropertyPrimary($reflectionProperty)) {
+				$primaryReflectionProperty = $reflectionProperty;
+			} else {
+				$attributeSqlName = static::getSqlColFromField($reflectionProperty->getName());
+				$quotedValue = $this->getQuotedValueOfReflectionProperty($item, $reflectionProperty);
+
+				$sqlSetValues[] = "`$attributeSqlName` = $quotedValue";
+			}
+		}
+		if ($primaryReflectionProperty === null) {
+			throw new LogicException('Cannot update without primary key');
+		}
+		$primaryAttributeName = $primaryReflectionProperty->getName();
+		if ($item->$primaryAttributeName === null) {
+			throw new LogicException('Cannot update with primary key as null');
+		}
+		$primaryAttributeSqlName = static::getSqlColFromField($primaryAttributeName);
+		$primaryQuotedValue = $this->getQuotedValueOfReflectionProperty($item, $primaryReflectionProperty);
+
+		$sqlSetValuesAsSql = implode(', ', $sqlSetValues);
+
+		$updateQuery = "
+			UPDATE `$table`
+			SET $sqlSetValuesAsSql
+			WHERE `$primaryAttributeSqlName` = $primaryQuotedValue
+		";
+
+		$this->getPdo()->exec($updateQuery);
+	}
+
+	public function insertItem(mixed $item): void {
+		$table = $this->getTable();
+
+		$sqlFields = array();
+		$sqlValues = array();
+		$primaryReflectionProperty = null;
+		foreach ($this->getReflectionProperties() as $reflectionProperty) {
+			$attributeName = $reflectionProperty->getName();
+			$attributeSqlName = static::getSqlColFromField($attributeName);
+			$sqlFields[] = "`$attributeSqlName`";
+			$sqlValues[] =  $this->getQuotedValueOfReflectionProperty($item, $reflectionProperty);
+
+			if ($this->isReflectionPropertyPrimary($reflectionProperty)) {
+				$primaryReflectionProperty = $reflectionProperty;
+			}
+		}
+
+		$sqlFieldsAsSql = implode(', ', $sqlFields);
+		$sqlValuesAsSql = implode(', ', $sqlValues);
+
+		$updateQuery = "
+			INSERT INTO `$table` ($sqlFieldsAsSql)
+			VALUES ($sqlValuesAsSql)
+		";
+
+		try {
+			$this->getPdo()->beginTransaction();
+
+			$this->getPdo()->exec($updateQuery);
+
+			if ($primaryReflectionProperty !== null) {
+				$primaryAttributeName = $primaryReflectionProperty->getName();
+				$item->$primaryAttributeName = $this->lastInsertedId();
+			}
+
+			$this->getPdo()->commit();
+		} catch (Exception $e) {
+			$this->getPdo()->rollBack();
+			throw $e;
+		}
+	}
+
+	private function getQuotedValueOfReflectionProperty(
+			mixed $element,
+			ReflectionProperty $reflectionProperty
+	): string {
+		$attributeName = $reflectionProperty->getName();
+		$rawValue = $element->$attributeName;
+		if ($rawValue === null) {
+			$quotedValue = 'NULL';
+		} else if ($rawValue instanceof BackedEnum) {
+			// Generated Enums are BackedEnum with value as string = sql value
+			$quotedValue = $this->getPdo()->quote($rawValue->value);
+		} else {
+			$value = match ($reflectionProperty->getType()?->getName()) {
+				'bool' => $rawValue ? '1' : '0',
+				'float', 'int', 'string' => $rawValue,
+				'DateTime' => date('Y-m-d H:i:s', $rawValue->getTimestamp()),
+			};
+			$quotedValue = $this->getPdo()->quote($value);
+		}
+
+		return $quotedValue;
+	}
+
+	private function isReflectionPropertyPrimary(ReflectionProperty $reflectionProperty): bool {
+		$classFieldAttributes = $reflectionProperty->getAttributes(ClassField::class);
+		foreach ($classFieldAttributes as $classFieldAttribute) {
+			/** @var ClassField $classField */
+			$classField = $classFieldAttribute->newInstance();
+			if ($classField->classFieldEnum === ClassFieldEnum::PRIMARY) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function saveElements(array $elements): void {
+		$table = $this->getTable();
+
+		$reflectionProperties = $this->getReflectionProperties();
 
 		$sqlFields = array();
 		foreach ($reflectionProperties as $reflectionProperty) {
@@ -271,23 +399,12 @@ abstract class SqlDao {
 					$attributeName = $reflectionProperty->getName();
 					$attributeSqlName = static::getSqlColFromField($attributeName);
 
-					$rawValue = $element->$attributeName;
-					if ($rawValue === null) {
-						$quotedValue = 'NULL';
-					} else if ($rawValue instanceof BackedEnum) {
-						// Generated Enums are BackedEnum with value as string = sql value
-						$quotedValue = $this->getPdo()->quote($rawValue->value);
-					} else {
-						$value = match ($reflectionProperty->getType()?->getName()) {
-							'bool' => $rawValue ? '1' : '0',
-							'float', 'int', 'string' => $rawValue,
-							'DateTime' => date('Y-m-d H:i:s', $rawValue->getTimestamp()),
-						};
-						$quotedValue = $this->getPdo()->quote($value);
-					}
+					$sqlValues[] = $this->getQuotedValueOfReflectionProperty($element, $reflectionProperty);
 
-					$sqlValues[] = $quotedValue;
-					$sqlUpdates[] = "`$attributeSqlName`=VALUES(`$attributeSqlName`)";
+					$isPrimaryField = $this->isReflectionPropertyPrimary($reflectionProperty);
+					if (!$isPrimaryField) {
+						$sqlUpdates[] = "`$attributeSqlName`=VALUES(`$attributeSqlName`)";
+					}
 				}
 				$sqlValuesGroups[] = $sqlValues;
 				$sqlUpdatesGroups[] = $sqlUpdates;

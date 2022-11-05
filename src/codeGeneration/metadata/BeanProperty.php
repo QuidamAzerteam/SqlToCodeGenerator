@@ -51,7 +51,8 @@ class BeanProperty {
 		$fieldBuilder = FieldBuilder::create($this->getName())
 				->setPhpType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getPhpType($this->propertyType))
 				->setJsType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getJsType($this->propertyType))
-				->setIsNullable($this->isNullable || $this->columnKey === BeanPropertyColKey::PRI);
+				->setIsNullable($this->isNullable || $this->columnKey === BeanPropertyColKey::PRI)
+				->setClassFieldEnum($this->columnKey?->toClassFieldEnum());
 
 		if ($this->defaultValueAsString !== null) {
 			$defaultValue = $this->defaultValueAsString;

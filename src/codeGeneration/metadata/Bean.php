@@ -4,6 +4,8 @@ namespace SqlToCodeGenerator\codeGeneration\metadata;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassField;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
 use SqlToCodeGenerator\codeGeneration\bean\Line;
 use SqlToCodeGenerator\codeGeneration\builder\ClassBuilder;
 use SqlToCodeGenerator\codeGeneration\builder\FieldBuilder;
@@ -44,6 +46,12 @@ class Bean {
 
 		foreach ($this->properties as $property) {
 			$classBuilder->addFieldBuilders($property->getFieldBuilder());
+			if ($property->columnKey?->toClassFieldEnum() !== null) {
+				$classBuilder->addImports(
+						ClassField::class,
+						ClassFieldEnum::class,
+				);
+			}
 		}
 
 		if ($this->foreignBeans) {
@@ -152,13 +160,44 @@ class Bean {
 				lines: array(
 					Line::create("parent::saveElements(\$elements);"),
 				),
+				parameterBuilders: [FunctionParameterBuilder::create(
+						name: 'elements',
+						type: 'array',
+				)],
 		);
 		$classBuilder->addPhpFunctionBuilders($saveElementsFunctionBuilder);
 
-		$saveElementsFunctionBuilder->addParameterBuilders(FunctionParameterBuilder::create(
-				name: 'elements',
-				type: 'array',
-		));
+		$updateFunctionBuilder = FunctionBuilder::create(
+				name: 'update',
+				returnType: 'void',
+				documentationLines: array(
+					"@param {$this->getClassName()} \$item",
+				),
+				lines: array(
+					Line::create("parent::updateItem(\$item);"),
+				),
+				parameterBuilders: [FunctionParameterBuilder::create(
+						name: 'item',
+						type: $this->getClassName(),
+				)],
+		);
+		$classBuilder->addPhpFunctionBuilders($updateFunctionBuilder);
+
+		$updateFunctionBuilder = FunctionBuilder::create(
+				name: 'insert',
+				returnType: 'void',
+				documentationLines: array(
+					"@param {$this->getClassName()} \$item",
+				),
+				lines: array(
+					Line::create("parent::insertItem(\$item);"),
+				),
+				parameterBuilders: [FunctionParameterBuilder::create(
+						name: 'item',
+						type: $this->getClassName(),
+				)],
+		);
+		$classBuilder->addPhpFunctionBuilders($updateFunctionBuilder);
 
 		$getSqlColFromFieldFunctionBuilder = FunctionBuilder::create(
 				name: 'getSqlColFromField',
