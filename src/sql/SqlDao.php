@@ -120,47 +120,38 @@ abstract class SqlDao {
 			$itemReflection = new ReflectionObject($item);
 			foreach ($row as $colKey => $colValue) {
 				$field = lcfirst(self::sqlToCamelCase($colKey));
-				$property = $itemReflection->getProperty($field);
-				// https://www.php.net/manual/en/language.types.declarations.php
-				$typeName = $property->getType()?->getName();
-				switch ($typeName) {
-					case 'array':
-					case 'callable':
-					case 'iterable':
-					case 'object':
-					case 'mixed':
-						throw new LogicException("PDO cannot return $typeName");
 
-					case 'bool':
-						$item->$field = (bool) $colValue;
-						break;
-					case 'float':
-						$item->$field = (float) $colValue;
-						break;
-					case 'int':
-						$item->$field = (int) $colValue;
-						break;
-					case 'string':
-						$item->$field = (string) $colValue;
-						break;
-					case 'DateTime':
-						$item->$field = new DateTime($colValue);
-						break;
+				if ($colValue === null) {
+					$item->$field = null;
+				} else {
+					$property = $itemReflection->getProperty($field);
+					// https://www.php.net/manual/en/language.types.declarations.php
+					$typeName = $property->getType()?->getName();
 
-					default:
-						try {
-							$maybeItsAClass = new ReflectionClass($typeName);
-							if ($maybeItsAClass->isEnum()) {
-								$item->$field = $colValue !== null
-										? $maybeItsAClass
-												->getMethod('from')
-												->invoke(null, $colValue)
-										: $colValue;
-								break;
-							}
-						} catch (ReflectionException) {}
+					$item->$field = match($typeName) {
+						'array', 'callable', 'iterable', 'object', 'mixed' => throw new LogicException("PDO cannot return $typeName"),
 
-						throw new LogicException("PDO type return not implemented: $typeName");
+						'bool' => (bool) $colValue,
+						'float' => (float) $colValue,
+						'int' => (int) $colValue,
+						'string' => (string) $colValue,
+						'DateTime' => new DateTime($colValue),
+
+						default => (static function () use ($colValue, $item, $typeName) {
+							try {
+								$maybeItsAClass = new ReflectionClass($typeName);
+								if ($maybeItsAClass->isEnum()) {
+									return $colValue !== null
+											? $maybeItsAClass
+													->getMethod('from')
+													->invoke(null, $colValue)
+											: $colValue;
+								}
+							} catch (ReflectionException) {}
+
+							throw new LogicException("PDO type return not implemented: $typeName");
+						})()
+					};
 				}
 			}
 			$items[] = $item;
