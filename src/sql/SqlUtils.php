@@ -2,7 +2,7 @@
 
 namespace SqlToCodeGenerator\sql;
 
-use RuntimeException;
+use LogicException;
 
 abstract class SqlUtils {
 
@@ -26,7 +26,7 @@ abstract class SqlUtils {
 
 	public static function getPdoContainer(): PdoContainer {
 		if (!isset(self::$pdoContainer)) {
-			throw new RuntimeException('PDO is null. Call an init method method first');
+			throw new LogicException('PDO is null. Call an init method method first');
 		}
 
 		return self::$pdoContainer;

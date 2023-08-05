@@ -16,7 +16,7 @@ enum BeanPropertyColKey {
 
 	public static function tryFrom(string $columnKey): ?self {
 		return array_filter(
-				self::cases(),
+				BeanPropertyColKey::cases(),
 				static fn(self $case): bool => $case->name === $columnKey,
 		)[0] ?? null;
 	}

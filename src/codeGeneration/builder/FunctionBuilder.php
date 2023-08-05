@@ -119,7 +119,7 @@ class FunctionBuilder {
 		foreach ($this->parameterBuilders as $parameterBuilder) {
 			$fileContent .= $baseIndentation . "{$parameterBuilder->getJsDocFileContent()}\n";
 		}
-		$fileContent .= $baseIndentation . " * @return " . '{' . $this->returnType . '}' . "\n";
+		$fileContent .= "{$baseIndentation} * @return {{$this->returnType}}\n";
 		$fileContent .= $baseIndentation . " */\n";
 
 		$parametersAsStrings = [];

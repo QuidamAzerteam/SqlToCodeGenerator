@@ -45,12 +45,9 @@ class SqlDaoTest extends TestCase {
 		$paramsContainer = $this->getParamsContainer();
 		$paramsContainer->pdo->method('inTransaction')->willThrowException(new ExpectedException('inTransaction'));
 
-		try {
-			$paramsContainer->sqlDao->endTransaction();
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('inTransaction', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('inTransaction');
+		$paramsContainer->sqlDao->endTransaction();
 	}
 
 	public function testEndTransactionInTransactionCommit(): void {
@@ -58,12 +55,10 @@ class SqlDaoTest extends TestCase {
 		$paramsContainer->pdo->method('inTransaction')->willReturn(true);
 		$paramsContainer->pdo->method('commit')->willThrowException(new ExpectedException('commit'));
 
-		try {
-			$paramsContainer->sqlDao->endTransaction();
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('commit', $e->getMessage());
-		}
+
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('commit');
+		$paramsContainer->sqlDao->endTransaction();
 	}
 
 	public function testEndTransactionInTransactionOut(): void {
@@ -78,12 +73,9 @@ class SqlDaoTest extends TestCase {
 		$paramsContainer = $this->getParamsContainer();
 		$paramsContainer->pdo->method('inTransaction')->willThrowException(new ExpectedException('inTransaction'));
 
-		try {
-			$paramsContainer->sqlDao->cancelTransaction();
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('inTransaction', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('inTransaction');
+		$paramsContainer->sqlDao->cancelTransaction();
 	}
 
 	public function testCancelTransactionInTransactionCommit(): void {
@@ -91,12 +83,9 @@ class SqlDaoTest extends TestCase {
 		$paramsContainer->pdo->method('inTransaction')->willReturn(true);
 		$paramsContainer->pdo->method('rollBack')->willThrowException(new ExpectedException('rollBack'));
 
-		try {
-			$paramsContainer->sqlDao->cancelTransaction();
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('rollBack', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('rollBack');
+		$paramsContainer->sqlDao->cancelTransaction();
 	}
 
 	public function testCancelTransactionInTransactionOut(): void {
@@ -169,12 +158,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('emptyQuery'));
 
-		try {
-			$paramsContainer->sqlDao->get();
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('emptyQuery', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('emptyQuery');
+		$paramsContainer->sqlDao->get();
 	}
 
 	public function testGetOnlyWhere(): void {
@@ -189,12 +175,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyWhere'));
 
-		try {
-			$paramsContainer->sqlDao->get(where: 'where');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('onlyWhere', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('onlyWhere');
+		$paramsContainer->sqlDao->get(where: 'where');
 	}
 
 	public function testGetOnlyGroupBy(): void {
@@ -209,12 +192,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyGroupBy'));
 
-		try {
-			$paramsContainer->sqlDao->get(groupBy: 'group by');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('onlyGroupBy', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('onlyGroupBy');
+		$paramsContainer->sqlDao->get(groupBy: 'group by');
 	}
 
 	public function testGetOnlyOrderBy(): void {
@@ -229,12 +209,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyOrderBy'));
 
-		try {
-			$paramsContainer->sqlDao->get(orderBy: 'order by');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('onlyOrderBy', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('onlyOrderBy');
+		$paramsContainer->sqlDao->get(orderBy: 'order by');
 	}
 
 	public function testGetOnlyLimit(): void {
@@ -249,12 +226,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyLimit'));
 
-		try {
-			$paramsContainer->sqlDao->get(limit: 'limit');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('onlyLimit', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('onlyLimit');
+		$paramsContainer->sqlDao->get(limit: 'limit');
 	}
 
 	public function testGetWhereBeforeAll(): void {
@@ -269,17 +243,14 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeAll'));
 
-		try {
-			$paramsContainer->sqlDao->get(
-					where: 'where',
-					groupBy: 'group by',
-					orderBy: 'order by',
-					limit: 'limit',
-			);
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('whereBeforeAll', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('whereBeforeAll');
+		$paramsContainer->sqlDao->get(
+				where: 'where',
+				groupBy: 'group by',
+				orderBy: 'order by',
+				limit: 'limit',
+		);
 	}
 
 	public function testGetWhereBeforeGroupBy(): void {
@@ -294,12 +265,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeGroupBy'));
 
-		try {
-			$paramsContainer->sqlDao->get(where: 'where', groupBy: 'group by');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('whereBeforeGroupBy', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('whereBeforeGroupBy');
+		$paramsContainer->sqlDao->get(where: 'where', groupBy: 'group by');
 	}
 
 	public function testGetWhereBeforeOrderBy(): void {
@@ -314,12 +282,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeOrderBy'));
 
-		try {
-			$paramsContainer->sqlDao->get(where: 'where', orderBy: 'order by');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('whereBeforeOrderBy', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('whereBeforeOrderBy');
+		$paramsContainer->sqlDao->get(where: 'where', orderBy: 'order by');
 	}
 
 	public function testGetWhereBeforeLimit(): void {
@@ -334,12 +299,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeLimit'));
 
-		try {
-			$paramsContainer->sqlDao->get(where: 'where', limit: 'limit');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('whereBeforeLimit', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('whereBeforeLimit');
+		$paramsContainer->sqlDao->get(where: 'where', limit: 'limit');
 	}
 
 	public function testGetGroupByBeforeOrderBy(): void {
@@ -354,12 +316,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('groupByBeforeOrderBy'));
 
-		try {
-			$paramsContainer->sqlDao->get(groupBy: 'group by', orderBy: 'order by');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('groupByBeforeOrderBy', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('groupByBeforeOrderBy');
+		$paramsContainer->sqlDao->get(groupBy: 'group by', orderBy: 'order by');
 	}
 
 	public function testGetGroupByBeforeLimit(): void {
@@ -374,12 +333,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('groupByBeforeLimit'));
 
-		try {
-			$paramsContainer->sqlDao->get(groupBy: 'group by', limit: 'limit');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('groupByBeforeLimit', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('groupByBeforeLimit');
+		$paramsContainer->sqlDao->get(groupBy: 'group by', limit: 'limit');
 	}
 
 	public function testGetOrderByBeforeLimit(): void {
@@ -394,12 +350,9 @@ class SqlDaoTest extends TestCase {
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('orderByBeforeLimit'));
 
-		try {
-			$paramsContainer->sqlDao->get(orderBy: 'order by', limit: 'limit');
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('orderByBeforeLimit', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('orderByBeforeLimit');
+		$paramsContainer->sqlDao->get(orderBy: 'order by', limit: 'limit');
 	}
 
 	public function testGetResults(): void {
@@ -543,13 +496,9 @@ class SqlDaoTest extends TestCase {
 				)
 				->willThrowException(new ExpectedException('updateItem'));
 
-
-		try {
-			$paramsContainer->sqlDao->updateItem($item);
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('updateItem', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('updateItem');
+		$paramsContainer->sqlDao->updateItem($item);
 	}
 
 	public function testInsertItem(): void {
@@ -585,13 +534,9 @@ class SqlDaoTest extends TestCase {
 				)
 				->willThrowException(new ExpectedException('insertItem'));
 
-
-		try {
-			$paramsContainer->sqlDao->insertItem($item);
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('insertItem', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('insertItem');
+		$paramsContainer->sqlDao->insertItem($item);
 	}
 
 	public function testInsertItemLastInsertedId(): void {
@@ -651,13 +596,9 @@ class SqlDaoTest extends TestCase {
 				)
 				->willThrowException(new ExpectedException('saveElements'));
 
-
-		try {
-			$paramsContainer->sqlDao->saveElements([$item]);
-			$this->fail('Expected ExpectedException');
-		} catch (ExpectedException $e) {
-			$this->assertSame('saveElements', $e->getMessage());
-		}
+		$this->expectException(ExpectedException::class);
+		$this->expectExceptionMessage('saveElements');
+		$paramsContainer->sqlDao->saveElements([$item]);
 	}
 
 }
