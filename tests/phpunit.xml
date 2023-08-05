@@ -15,6 +15,10 @@
 		</report>
 	</coverage>
 
+	<logging>
+		<junit outputFile="generatedReports/junit.xml"/>
+	</logging>
+
 	<testsuite name="all">
 		<directory>./</directory>
 	</testsuite>
