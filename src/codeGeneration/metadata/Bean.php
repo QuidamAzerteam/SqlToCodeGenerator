@@ -58,11 +58,7 @@ class Bean {
 						ClassField::class,
 						ClassFieldEnum::class,
 				);
-			} else if (
-					$property->propertyType === BeanPropertyType::DATE
-					&& $property->defaultValueAsString !== null
-					&& $property->defaultValueAsString !== 'null'
-			) {
+			} else if ($property->propertyType === BeanPropertyType::DATE) {
 				$classBuilder->addImports(DateTime::class);
 			}
 		}

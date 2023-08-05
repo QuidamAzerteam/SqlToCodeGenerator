@@ -37,7 +37,7 @@ class ForeignBeanFieldTest extends TestCase {
 		$this->assertSame(
 				FieldBuilder::create(VariableUtils::getPluralOfVarName('getClassName'))
 						->setPhpType('array')
-						->setDefaultValue('array()')
+						->setDefaultValue('[]')
 						->setCustomTypeHint('getClassName[]')
 						->getPhpFileContent(),
 				$foreignBeanField->getAsFieldBuilderForPhp()

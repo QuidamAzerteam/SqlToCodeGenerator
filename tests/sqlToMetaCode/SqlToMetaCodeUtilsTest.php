@@ -180,46 +180,6 @@ class SqlToMetaCodeUtilsTest extends TestCase {
 	}
 
 	#[Depends('testSimpleColumnToBean')]
-	public function testDateDefaultValueAsCurrentTimestamp(): void {
-		$table = SqlToMetaTestUtils::getTable(
-				tableSchema: 'tableSchema',
-				tableName: 'tableName',
-		);
-		$column = SqlToMetaTestUtils::getColumn(
-				tableSchema: 'tableSchema',
-				tableName: 'tableName',
-				columnName: 'columnName',
-				dataType: 'DATE',
-				columnDefault: 'current_timestamp()',
-		);
-
-		[$bean] = SqlToMetaCodeUtils::getBeansFromMetaCodeBeans([$table], [$column], []);
-		[$property] = $bean->properties;
-
-		$this->assertSame('new DateTime()', $property->defaultValueAsString);
-	}
-
-	#[Depends('testSimpleColumnToBean')]
-	public function testDateDefaultValueAsDate(): void {
-		$table = SqlToMetaTestUtils::getTable(
-				tableSchema: 'tableSchema',
-				tableName: 'tableName',
-		);
-		$column = SqlToMetaTestUtils::getColumn(
-				tableSchema: 'tableSchema',
-				tableName: 'tableName',
-				columnName: 'columnName',
-				dataType: 'DATE',
-				columnDefault: '1970-01-01',
-		);
-
-		[$bean] = SqlToMetaCodeUtils::getBeansFromMetaCodeBeans([$table], [$column], []);
-		[$property] = $bean->properties;
-
-		$this->assertSame("new DateTime('1970-01-01')", $property->defaultValueAsString);
-	}
-
-	#[Depends('testSimpleColumnToBean')]
 	public function testBoolDefaultFalse(): void {
 		$table = SqlToMetaTestUtils::getTable(
 				tableSchema: 'tableSchema',

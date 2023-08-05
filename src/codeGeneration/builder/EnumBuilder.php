@@ -73,9 +73,9 @@ class EnumBuilder extends FileBuilder {
 		return "enum $this->name";
 	}
 
-	public function getFieldsPhpFileContent(): string {
+	public function getFieldsPhpFileContent(string $baseIndentation = ''): string {
 		return $this->fields
-				? implode("\n", array_map(
+				? $baseIndentation . implode("\n$baseIndentation", array_map(
 						static fn(string $field): string => "case $field;",
 						$this->fields,
 				)) . "\n"

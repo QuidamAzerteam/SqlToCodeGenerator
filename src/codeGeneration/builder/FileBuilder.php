@@ -126,7 +126,7 @@ abstract class FileBuilder {
 
 	abstract public function getFileTypeWithName(): string;
 
-	abstract public function getFieldsPhpFileContent(): string;
+	abstract public function getFieldsPhpFileContent(string $baseIndentation = ''): string;
 
 	abstract public function getFieldsJsFileContent(): string;
 
@@ -134,19 +134,16 @@ abstract class FileBuilder {
 		$extends = $this->extends ? " extends $this->extends" : '';
 		$implements = $this->implements ? " implements $this->implements" : '';
 
-		$phpFunctionBuilders = $this->phpFunctionBuilders
-				? implode("\n\n", array_map(
-						static fn(FunctionBuilder $functionBuilder): string => $functionBuilder->getPhpFileContent("\t"),
-						$this->phpFunctionBuilders,
-				))
-				: null;
-
 		$fieldsAndFunctionsFileContent = '';
 		if ($this->getFieldsPhpFileContent()) {
-			$fieldsAndFunctionsFileContent .= "\n\t" . $this->getFieldsPhpFileContent();
+			$fieldsAndFunctionsFileContent .= "\n" . $this->getFieldsPhpFileContent("\t");
 		}
-		if ($phpFunctionBuilders) {
-			$fieldsAndFunctionsFileContent .= "\n\t" . $phpFunctionBuilders . "\n";
+		if ($this->phpFunctionBuilders) {
+			$phpFunctionBuilders = implode("\n\n", array_map(
+					static fn(FunctionBuilder $functionBuilder): string => $functionBuilder->getPhpFileContent("\t"),
+					$this->phpFunctionBuilders,
+			));
+			$fieldsAndFunctionsFileContent .= "\n" . $phpFunctionBuilders . "\n";
 		}
 
 		return $this->getBeforeFileTypeDeclarationPhpFileContent() . <<<PHP

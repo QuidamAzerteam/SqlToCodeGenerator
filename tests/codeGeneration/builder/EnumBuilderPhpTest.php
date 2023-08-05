@@ -40,7 +40,7 @@ class EnumBuilderPhpTest extends TestCase {
 				basePackage: 'basePackage',
 				namespace: 'namespace',
 				name: 'name',
-				fields: ['test'],
+				fields: ['test1', 'test2'],
 		);
 
 		$expected = <<<PHP
@@ -53,7 +53,8 @@ class EnumBuilderPhpTest extends TestCase {
 			 */
 			enum name {
 
-				case test;
+				case test1;
+				case test2;
 
 			}
 

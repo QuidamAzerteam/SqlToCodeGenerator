@@ -77,10 +77,10 @@ class ClassBuilder extends FileBuilder {
 		return "class $this->name";
 	}
 
-	public function getFieldsPhpFileContent(): string {
+	public function getFieldsPhpFileContent(string $baseIndentation = ''): string {
 		return $this->fieldBuilders
 				? implode("\n", array_map(
-						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent("\t"),
+						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent($baseIndentation),
 						$this->fieldBuilders,
 				)) . "\n"
 				: '';

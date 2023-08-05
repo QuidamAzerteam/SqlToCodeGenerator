@@ -23,7 +23,7 @@ enum BeanPropertyType {
 			self::ENUM_LIST => 'array',
 			self::FLOAT => 'float',
 			self::STRING => 'string',
-			self::DATE => '\DateTime',
+			self::DATE => 'DateTime',
 			self::BOOL => 'bool',
 			self::OBJECT => throw new LogicException('Not supposed to occur'),
 			self::JSON => throw new LogicException('To be implemented'),

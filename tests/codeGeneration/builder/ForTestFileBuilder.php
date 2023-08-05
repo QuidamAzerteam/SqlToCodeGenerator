@@ -11,7 +11,7 @@ class ForTestFileBuilder extends FileBuilder {
 		throw new LogicException('This class is only here for testing, not for usage');
 	}
 
-	public function getFieldsPhpFileContent(): string {
+	public function getFieldsPhpFileContent(string $baseIndentation = ''): string {
 		throw new LogicException('This class is only here for testing, not for usage');
 	}
 

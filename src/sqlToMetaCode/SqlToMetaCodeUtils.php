@@ -76,13 +76,9 @@ final class SqlToMetaCodeUtils {
 					}
 					break;
 				case BeanPropertyType::DATE:
-					// DateTime import are handled in Bean->getPhpClassFileContent()
-					if ($defaultValue === 'current_timestamp()') {
-						$property->defaultValueAsString = "new DateTime()";
-					} else if ($defaultValue !== null) {
-						$property->defaultValueAsString = $defaultValue === 'null'
-								? 'null'
-								: "new DateTime('$defaultValue')";
+					// This default value as new DateTime is not handled by PHP for now
+					if ($defaultValue !== null && $defaultValue !== 'current_timestamp()') {
+						$property->defaultValueAsString = $defaultValue;
 					}
 					break;
 				case BeanPropertyType::BOOL:
