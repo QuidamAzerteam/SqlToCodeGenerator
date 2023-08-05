@@ -296,7 +296,7 @@ class ClassBuilderPhpTest extends TestCase {
 			 */
 			class name {
 
-				testPhpFieldBuilders
+			testPhpFieldBuilders
 
 			}
 
@@ -370,7 +370,7 @@ class ClassBuilderPhpTest extends TestCase {
 			 */
 			class name {
 
-				testPhpFieldBuilders
+			testPhpFieldBuilders
 
 			testPhpFunctionBuilders
 
