@@ -75,7 +75,7 @@ class EnumBuilder extends FileBuilder {
 
 	public function getFieldsPhpFileContent(): string {
 		return $this->fields
-				? implode("\n", array_map(
+				? implode("\n\t", array_map(
 						static fn(string $field): string => "case $field;",
 						$this->fields,
 				)) . "\n"
