@@ -18,7 +18,7 @@ class ForeignBeanField {
 		if ($this->isArray) {
 			$foreignBeanFieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName($var))
 					->setPhpType('array')
-					->setDefaultValue('array()')
+					->setDefaultValue('[]')
 					->setCustomTypeHint($this->toBean->getClassName() . '[]');
 		} else {
 			$foreignBeanFieldBuilder = FieldBuilder::create($var)

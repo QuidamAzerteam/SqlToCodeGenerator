@@ -79,8 +79,8 @@ class ClassBuilder extends FileBuilder {
 
 	public function getFieldsPhpFileContent(string $baseIndentation = ''): string {
 		return $this->fieldBuilders
-				? $baseIndentation . implode("\n$baseIndentation", array_map(
-						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent("\t"),
+				? implode("\n", array_map(
+						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent($baseIndentation),
 						$this->fieldBuilders,
 				)) . "\n"
 				: '';
