@@ -2,10 +2,10 @@
 
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\bean\Line;
 use SqlToCodeGenerator\codeGeneration\builder\FunctionBuilder;
-use SqlToCodeGenerator\codeGeneration\enums\Visibility;
 
 class FunctionBuilderJsTest extends TestCase {
 
@@ -16,74 +16,70 @@ class FunctionBuilderJsTest extends TestCase {
 				returnType: 'returnType',
 		);
 
-		$expected = "/**
- * @return {returnType}
- */
-name() {
-}";
+		$expected = <<<JS
+			/**
+			 * @return {returnType}
+			 */
+			name() {}
+			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent('')
+				$functionBuilder->getJsFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIndent(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
 		);
 
-		$expectedOneIndent = "	/**
-	 * @return {{$functionBuilder->getReturnType()}}
-	 */
-	{$functionBuilder->getName()}() {
-	}";
+		$expectedOneIndent = <<<JS
+				/**
+				 * @return {returnType}
+				 */
+				name() {}
+			JS;
 		$this->assertSame(
 				$expectedOneIndent,
-				$functionBuilder->getJsFileContent("\t")
+				$functionBuilder->getJsFileContent("\t"),
 		);
 
-		$expectedTwoIndents = "		/**
-		 * @return {{$functionBuilder->getReturnType()}}
-		 */
-		{$functionBuilder->getName()}() {
-		}";
+		$expectedTwoIndents = <<<JS
+					/**
+					 * @return {returnType}
+					 */
+					name() {}
+			JS;
 		$this->assertSame(
 				$expectedTwoIndents,
-				$functionBuilder->getJsFileContent("\t\t")
+				$functionBuilder->getJsFileContent("\t\t"),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testDocumentationLines(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
-				documentationLines: array(
-					'test',
-				),
+				documentationLines: ['test'],
 		);
 
-		$expected = "/**
- * test
- * @return {{$functionBuilder->getReturnType()}}
- */
-{$functionBuilder->getName()}() {
-}";
+		$expected = <<<JS
+			/**
+			 * test
+			 * @return {returnType}
+			 */
+			name() {}
+			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent('')
+				$functionBuilder->getJsFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIsStatic(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
@@ -91,40 +87,41 @@ name() {
 				isStatic: true,
 		);
 
-		$expected = "/**
- * @return {{$functionBuilder->getReturnType()}}
- */
-static {$functionBuilder->getName()}() {
-}";
+		$expected = <<<JS
+			/**
+			 * @return {returnType}
+			 */
+			static name() {}
+			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent('')
+				$functionBuilder->getJsFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testLines(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
-				lines: array(
+				lines: [
 					Line::create('test'),
 					Line::create('test2', 1),
-				),
+				],
 		);
 
-		$expected = "/**
- * @return {{$functionBuilder->getReturnType()}}
- */
-{$functionBuilder->getName()}() {
-	test
-		test2
-}";
+		$expected = <<<JS
+		/**
+		 * @return {returnType}
+		 */
+		name() {
+			test
+				test2
+		}
+		JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent('')
+				$functionBuilder->getJsFileContent(''),
 		);
 	}
 

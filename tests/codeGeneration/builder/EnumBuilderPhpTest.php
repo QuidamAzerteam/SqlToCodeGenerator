@@ -2,7 +2,7 @@
 
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
-use LogicException;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\builder\EnumBuilder;
 
@@ -15,79 +15,53 @@ class EnumBuilderPhpTest extends TestCase {
 				name: 'name',
 		);
 
-		$expected = "<?php
+		$expected = <<<PHP
+			<?php
 
-namespace basePackage\\namespace;
+			namespace basePackage\\namespace;
 
-/**
- * This code is generated. Do not edit it
- */
-enum name: string {
+			/**
+			 * This code is generated. Do not edit it
+			 */
+			enum name {
 
-}
-";
+			}
+
+			PHP;
 		$this->assertSame(
 				$expected,
-				$fileBuilder->getPhpFileContent()
+				$fileBuilder->getPhpFileContent(),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testFields(): void {
 		$fileBuilder = EnumBuilder::create(
 				basePackage: 'basePackage',
 				namespace: 'namespace',
 				name: 'name',
+				fields: ['test'],
 		);
 
-		$fileBuilder->addFields('test');
-		$expected = "<?php
+		$expected = <<<PHP
+			<?php
 
-namespace basePackage\\namespace;
+			namespace basePackage\\namespace;
 
-/**
- * This code is generated. Do not edit it
- */
-enum name: string {
+			/**
+			 * This code is generated. Do not edit it
+			 */
+			enum name {
 
-	case test = 'test';
+				case test;
 
-}
-";
+			}
+
+			PHP;
 		$this->assertSame(
 				$expected,
-				$fileBuilder->getPhpFileContent()
+				$fileBuilder->getPhpFileContent(),
 		);
-	}
-
-	/**
-	 * @depends testMinimal
-	 */
-	public function testBadFields(): void {
-		$fileBuilder = EnumBuilder::create(
-				basePackage: 'basePackage',
-				namespace: 'namespace',
-				name: 'name',
-		);
-
-		$this->expectException(LogicException::class);
-		$fileBuilder->addFields('123');
-	}
-
-	/**
-	 * @depends testMinimal
-	 */
-	public function testDuplicateFieldsError(): void {
-		$fileBuilder = EnumBuilder::create(
-				basePackage: 'basePackage',
-				namespace: 'namespace',
-				name: 'name',
-		);
-
-		$this->expectException(LogicException::class);
-		$fileBuilder->addFields('test', 'test');
 	}
 
 }

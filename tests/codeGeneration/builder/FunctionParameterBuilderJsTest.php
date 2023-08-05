@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\builder\FunctionParameterBuilder;
 
@@ -13,22 +14,18 @@ class FunctionParameterBuilderJsTest extends TestCase {
 				name: 'name',
 		);
 
-		$expectedDoc = ' * @param {type} name';
 		$this->assertSame(
-				$expectedDoc,
-				$functionParameterBuilder->getJsDocFileContent('')
+				' * @param {type} name',
+				$functionParameterBuilder->getJsDocFileContent(''),
 		);
 
-		$expectedVar = 'name';
 		$this->assertSame(
-				$expectedVar,
-				$functionParameterBuilder->getJsParamFileContent('')
+				'name',
+				$functionParameterBuilder->getJsParamFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testDefaultValue(): void {
 		$functionParameterBuilder = FunctionParameterBuilder::create(
 				type: 'type',
@@ -36,16 +33,14 @@ class FunctionParameterBuilderJsTest extends TestCase {
 				defaultValue: 'hello world',
 		);
 
-		$expectedDoc = ' * @param {type} [name=hello world]';
 		$this->assertSame(
-				$expectedDoc,
-				$functionParameterBuilder->getJsDocFileContent('')
+				' * @param {type} [name=hello world]',
+				$functionParameterBuilder->getJsDocFileContent(''),
 		);
 
-		$expectedVar = 'name = hello world';
 		$this->assertSame(
-				$expectedVar,
-				$functionParameterBuilder->getJsParamFileContent('')
+				'name = hello world',
+				$functionParameterBuilder->getJsParamFileContent(''),
 		);
 	}
 

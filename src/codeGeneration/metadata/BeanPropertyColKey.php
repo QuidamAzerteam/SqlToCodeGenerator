@@ -14,23 +14,11 @@ enum BeanPropertyColKey {
 	case UNI;
 	case MUL;
 
-	public static function getFromString(?string $value): ?BeanPropertyColKey {
-		if (!$value) {
-			return null;
-		}
-		return match ($value) {
-			'PRI' => self::PRI,
-			'UNI' => self::UNI,
-			'MUL' => self::MUL,
-		};
-	}
-
-	public static function getAsString(BeanPropertyColKey $colKey): string {
-		return match ($colKey) {
-			self::PRI => 'Primary',
-			self::UNI => 'Unique',
-			self::MUL => '',
-		};
+	public static function tryFrom(string $columnKey): ?self {
+		return array_filter(
+				self::cases(),
+				static fn(self $case): bool => $case->name === $columnKey,
+		)[0] ?? null;
 	}
 
 	public function toClassFieldEnum(): ClassFieldEnum|null {
@@ -38,6 +26,14 @@ enum BeanPropertyColKey {
 			self::PRI => ClassFieldEnum::PRIMARY,
 			self::UNI => ClassFieldEnum::UNIQUE,
 			self::MUL => null,
+		};
+	}
+
+	public function toHumanReadableString(): string {
+		return match ($this) {
+			self::PRI => 'Primary',
+			self::UNI => 'Unique',
+			self::MUL => 'Multiple',
 		};
 	}
 

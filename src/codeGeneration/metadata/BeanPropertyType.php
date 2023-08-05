@@ -3,7 +3,6 @@
 namespace SqlToCodeGenerator\codeGeneration\metadata;
 
 use LogicException;
-use SqlToCodeGenerator\sqlToMetaCode\bean\Column;
 
 enum BeanPropertyType {
 
@@ -12,6 +11,7 @@ enum BeanPropertyType {
 	case STRING;
 	case DATE;
 	case ENUM;
+	case ENUM_LIST;
 	case BOOL;
 	case OBJECT;
 	case JSON;
@@ -20,6 +20,7 @@ enum BeanPropertyType {
 		return match ($propertyType) {
 			self::INT => 'int',
 			self::ENUM => '',
+			self::ENUM_LIST => 'array',
 			self::FLOAT => 'float',
 			self::STRING => 'string',
 			self::DATE => '\DateTime',
@@ -32,6 +33,7 @@ enum BeanPropertyType {
 	public static function getJsType(BeanPropertyType $propertyType): string {
 		return match ($propertyType) {
 			self::INT, self::ENUM => 'int',
+			self::ENUM_LIST => 'Array',
 			self::FLOAT => 'float',
 			self::STRING => 'string',
 			self::DATE => 'Date',
@@ -51,16 +53,17 @@ enum BeanPropertyType {
 		return match (strtoupper($sqlTypeAsString)) {
 
 			// https://mariadb.com/kb/en/numeric-data-type-overview/
-			'INT', 'INT1', 'INT2', 'INT3', 'INT4', 'INT8', 'MEDIUMINT', 'BIGINT' => self::INT,
+			'SMALLINT', 'INT', 'INT1', 'INT2', 'INT3', 'INT4', 'INT8', 'INTEGER', 'MEDIUMINT', 'BIGINT' => self::INT,
 			'BOOLEAN', 'BIT' => self::BOOL,
 			'TINYINT' => $columnType === 'tinyint(1)' ? self::BOOL : self::INT,
-			'DECIMAL', 'FLOAT', 'DOUBLE' => self::FLOAT,
+			'DECIMAL', 'DEC', 'NUMERIC', 'FIXED', 'NUMBER', 'FLOAT', 'DOUBLE', 'DOUBLE PRECISION', 'REAL' => self::FLOAT,
 
 			// https://mariadb.com/kb/en/string-data-types/
-			'VARCHAR', 'BINARY', 'BLOB', 'TEXT', 'CHAR', 'CHAR BYTE', 'INET6', 'MEDIUM BLOB', 'LONG BLOB',
+			'VARCHAR', 'BINARY', 'BLOB', 'TEXT', 'CHAR', 'CHAR BYTE', 'INET4', 'INET6', 'MEDIUMBLOB', 'LONGBLOB',
 			'LONG', 'LONG VARCHAR', 'LONGTEXT', 'MEDIUMTEXT', 'ROW', 'TINYBLOB', 'TINYTEXT', 'VARBINARY', 'UUID' => self::STRING,
 			'JSON' => self::JSON,
-			'ENUM', 'SET' => self::ENUM,
+			'ENUM' => self::ENUM,
+			'SET' => self::ENUM_LIST,
 
 			// https://mariadb.com/kb/en/date-and-time-data-types/
 			'DATE', 'TIME', 'DATETIME', 'TIMESTAMP', 'YEAR' => self::DATE,

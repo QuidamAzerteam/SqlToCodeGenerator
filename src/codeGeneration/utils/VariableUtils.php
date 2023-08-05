@@ -2,18 +2,27 @@
 
 namespace SqlToCodeGenerator\codeGeneration\utils;
 
-abstract class VariableUtils {
-
-	private final function __construct() {}
+final class VariableUtils {
 
 	public static function getPluralOfVarName($var): string {
+		// Some exceptions first
+		$exceptionAsPlural = match ($var) {
+			'data' => 'dataList',
+			'information' => 'informationList',
+			'scenario' => 'scenarii',
+			default => null,
+		};
+		if ($exceptionAsPlural !== null) {
+			return $exceptionAsPlural;
+		}
+
 		$arrayVar = substr($var, 0, -1);
 		$lastCharacter = substr($var, -1);
 		$previousLastCharacter = substr($var, -2, 1);
 
-		if (in_array($previousLastCharacter, array(
-			'a', 'e', 'i', 'o', 'u'
-		), true)) {
+		if (in_array($previousLastCharacter, [
+			'a', 'e', 'i', 'o', 'u',
+		], true)) {
 			return $var . 's';
 		}
 
@@ -23,6 +32,10 @@ abstract class VariableUtils {
 			default => $lastCharacter . 's',
 		};
 		return $arrayVar;
+	}
+
+	public static function stringToEnumCompliantValue(string $value): string {
+		return mb_strtoupper(preg_replace('/\s+/', '_', $value));
 	}
 
 }

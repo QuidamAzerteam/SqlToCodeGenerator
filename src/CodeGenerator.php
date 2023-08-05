@@ -14,7 +14,6 @@ use SqlToCodeGenerator\utils\FileUtils;
 
 class CodeGenerator {
 
-
 	/**
 	 * @param SqlToMetaCodeDao $sqlToMetaCodeDao
 	 * @param LoggerInterface $log
@@ -90,7 +89,6 @@ class CodeGenerator {
 	}
 
 	/**
-	 * @see __construct
 	 * @param string $host For {@see PDO} connection only
 	 * @param string $port For {@see PDO} connection only
 	 * @param string $user For {@see PDO} connection only. Need to be able to SELECT information_schema
@@ -106,6 +104,7 @@ class CodeGenerator {
 	 * @param string $daoDirName
 	 * @param string|null $testDirName
 	 * @return static
+	 * @see __construct
 	 */
 	public static function createFromScratch(
 			string $host,
@@ -117,7 +116,7 @@ class CodeGenerator {
 			string $basePackage,
 			string $phpDirName,
 			?string $jsDirName = null,
-			array $tablesToIgnore = array(),
+			array $tablesToIgnore = [],
 			string $genDirName = 'gen',
 			string $beanDirName = 'bean',
 			string $enumsDirName = 'enums',
@@ -131,10 +130,10 @@ class CodeGenerator {
 								$host,
 								$port,
 								$user,
-								$password
+								$password,
 						),
 						$bdd,
-						$tablesToIgnore
+						$tablesToIgnore,
 				),
 				$log,
 				$basePackage,
@@ -160,18 +159,23 @@ class CodeGenerator {
 			$bean->daoNamespace = $this->genDirName . '\\' . $this->daoDirName;
 
 			foreach ($bean->properties as $property) {
-				if ($property->enum !== null) {
-					$property->enum->basePackage = $this->basePackage;
-					$property->enum->namespace = "$this->genDirName\\$this->enumsDirName";
-					if ($property->defaultValueAsString !== null && $property->defaultValueAsString !== 'null') {
-						// Watch out, in local, default value have no "'" but in prod they do
-						// defaultValueAsString when Enum is string of the Enum
-						$property->defaultValueAsString = '\\' . $this->basePackage
-								. '\\' . $this->genDirName
-								. '\\' . $this->enumsDirName
-								. '\\' . $property->enum->name . '::'
-								. str_replace("'", '', $property->defaultValueAsString);
-					}
+				$enums = array_filter([$property->enum], ...$property->enums);
+				foreach ($enums as $enum) {
+					$enum->basePackage = $this->basePackage;
+					$enum->namespace = "$this->genDirName\\$this->enumsDirName";
+				}
+				if (
+						$property->enum
+						&& $property->defaultValueAsString !== null
+						&& $property->defaultValueAsString !== 'null'
+				) {
+					// Watch out, in local, default value have no "'" but in prod they do
+					// defaultValueAsString when Enum is string of the Enum
+					$property->defaultValueAsString = '\\' . $this->basePackage
+							. '\\' . $this->genDirName
+							. '\\' . $this->enumsDirName
+							. '\\' . $property->enum->name . '::'
+							. str_replace("'", '', $property->defaultValueAsString);
 				}
 			}
 		}
@@ -181,12 +185,14 @@ class CodeGenerator {
 
 	public function generate(): void {
 		/** @var Enum[] $enums */
-		$enums = array();
+		$enums = [];
 		$beans = $this->retrieveBeansFromSql();
 		foreach ($beans as $bean) {
 			foreach ($bean->properties as $property) {
 				if ($property->propertyType === BeanPropertyType::ENUM) {
 					$enums[] = $property->enum;
+				} else if ($property->propertyType === BeanPropertyType::ENUM_LIST) {
+					array_push($enums, ...$property->enums);
 				}
 			}
 		}
@@ -202,7 +208,7 @@ class CodeGenerator {
 		FileUtils::createDir($phpGenPath . '/' . $this->enumsDirName);
 
 		$testsGenPath = $this->testDirName !== null
-				? $this->testDirName . '/' . $this->genDirName 
+				? $this->testDirName . '/' . $this->genDirName
 				: null;
 		if ($testsGenPath !== null) {
 			FileUtils::recursiveDelete($testsGenPath);
@@ -228,33 +234,33 @@ class CodeGenerator {
 		}
 		$sOrNotS = count($beans) === 1 ? '' : 's';
 		$this->log->info(count($beans) . " table$sOrNotS retrieved as bean$sOrNotS: "
-				. implode(', ', array_map(static fn (Bean $bean) => $bean->getClassName(), $beans)));
+				. implode(', ', array_map(static fn(Bean $bean) => $bean->getClassName(), $beans)));
 
 		foreach ($beans as $bean) {
 			file_put_contents(
 					$phpGenPath . '/' . $this->beanDirName . '/' . $bean->getClassName() . '.php',
-					$bean->getPhpClassFileContent()
+					$bean->getPhpClassFileContent(),
 			);
 			file_put_contents(
 					$phpGenPath . '/' . $this->daoDirName . '/' . $bean->getDaoName() . '.php',
-					$bean->getPhpDaoFileContent()
+					$bean->getPhpDaoFileContent(),
 			);
 
 			if ($testsGenPath !== null) {
 				file_put_contents(
 						$testsGenPath . '/' . $this->beanDirName . '/' . $bean->getClassName() . 'Test.php',
-						$bean->getPhpTestFileContent()
+						$bean->getPhpTestFileContent(),
 				);
 				file_put_contents(
 						$testsGenPath . '/' . $this->daoDirName . '/' . $bean->getDaoName() . 'Test.php',
-						$bean->getPhpDaoTestFileContent()
+						$bean->getPhpDaoTestFileContent(),
 				);
 			}
 
 			if ($jsGenPath !== null) {
 				file_put_contents(
 						$jsGenPath . '/' . $this->beanDirName . '/' . $bean->getClassName() . '.js',
-						$bean->getJsClassFileContent()
+						$bean->getJsClassFileContent(),
 				);
 			}
 		}
@@ -265,25 +271,25 @@ class CodeGenerator {
 		}
 		$sOrNotS = count($enums) === 1 ? '' : 's';
 		$this->log->info("Enum$sOrNotS found: "
-				. implode(', ', array_map(static fn (Enum $enum) => $enum->name, $enums)));
+				. implode(', ', array_map(static fn(Enum $enum) => $enum->name, $enums)));
 
 		foreach ($enums as $enum) {
 			file_put_contents(
 					$phpGenPath . '/' . $this->enumsDirName . '/' . $enum->name . '.php',
-					$enum->getPhpFileContent()
+					$enum->getPhpFileContent(),
 			);
 
 			if ($testsGenPath !== null) {
 				file_put_contents(
 						$testsGenPath . '/' . $this->enumsDirName . '/' . $enum->name . 'Test.php',
-						$enum->getPhpTestFileContent($this->testDirName)
+						$enum->getPhpTestFileContent($this->testDirName),
 				);
 			}
 
 			if ($jsGenPath !== null) {
 				file_put_contents(
 						$jsGenPath . '/' . $this->enumsDirName . '/' . $enum->name . '.js',
-						$enum->getJsFileContent()
+						$enum->getJsFileContent(),
 				);
 			}
 		}

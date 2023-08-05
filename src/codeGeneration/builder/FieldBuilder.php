@@ -19,18 +19,19 @@ class FieldBuilder {
 	 * @param bool $isConst
 	 * @param string|null $customTypeHint
 	 * @param string[] $comments
+	 * @param ClassFieldEnum|null $classFieldEnum
 	 */
 	public function __construct(
-			private string $fieldName,
-			private Visibility $visibility = Visibility::PUBLIC,
+			private readonly string $fieldName,
+			private readonly Visibility $visibility = Visibility::PUBLIC,
 			private string $phpType = '',
 			private string $jsType = '',
 			private ?string $defaultValue = null,
 			private bool $isNullable = false,
 			private bool $isConst = false,
 			private ?string $customTypeHint = null,
-			private array $comments = array(),
-			private ClassFieldEnum|null $classFieldEnum = null
+			private array $comments = [],
+			private ClassFieldEnum|null $classFieldEnum = null,
 	) {
 		CheckUtils::checkPhpFieldName($fieldName);
 		CheckUtils::checkPhpType($phpType);
@@ -49,7 +50,7 @@ class FieldBuilder {
 			bool $isNullable = false,
 			bool $isConst = false,
 			?string $customTypeHint = null,
-			array $comments = array()
+			array $comments = [],
 	): static {
 		return new static(
 				fieldName: $fieldName,
@@ -64,52 +65,12 @@ class FieldBuilder {
 		);
 	}
 
-	public function getFieldName(): string {
-		return $this->fieldName;
-	}
-
-	public function getVisibility(): Visibility {
-		return $this->visibility;
-	}
-
-	public function getPhpType(): string {
-		return $this->phpType;
-	}
-
-	public function getJsType(): string {
-		return $this->jsType;
-	}
-
-	public function getDefaultValue(): ?string {
-		return $this->defaultValue;
-	}
-
 	public function doesDefaultValueExists(): bool {
 		return $this->defaultValue !== null && $this->defaultValue !== '';
 	}
 
 	public function isNullable(): bool {
 		return $this->isNullable;
-	}
-
-	public function isConst(): bool {
-		return $this->isConst;
-	}
-
-	public function getCustomTypeHint(): ?string {
-		return $this->customTypeHint;
-	}
-
-	/**
-	 * @return string[]
-	 */
-	public function getComments(): array {
-		return $this->comments;
-	}
-
-	public function setVisibility(Visibility $visibility): static {
-		$this->visibility = $visibility;
-		return $this;
 	}
 
 	public function setPhpType(string $phpType): static {
@@ -120,12 +81,6 @@ class FieldBuilder {
 
 	public function setJsType(string $jsType): static {
 		$this->jsType = $jsType;
-		return $this;
-	}
-
-	public function setFieldName(string $fieldName): static {
-		CheckUtils::checkPhpFieldName($fieldName);
-		$this->fieldName = $fieldName;
 		return $this;
 	}
 
@@ -167,7 +122,7 @@ class FieldBuilder {
 		return $this;
 	}
 
-	public function getPhpFileContent(string $prependLinesBy): string {
+	public function getPhpFileContent(string $prependLinesBy = ''): string {
 		$fileContent = '';
 
 		$defaultAsString = $this->doesDefaultValueExists() ? ' = ' . $this->defaultValue : '';
@@ -184,7 +139,7 @@ class FieldBuilder {
 			$fileContent .= $prependLinesBy . "#[ClassField(ClassFieldEnum::{$this->classFieldEnum->name})]\n";
 		}
 
-		$varParts = array();
+		$varParts = [];
 		if ($this->isConst) {
 			if ($this->isNullable) {
 				throw new LogicException('A nullable constant have no sense');
@@ -197,7 +152,7 @@ class FieldBuilder {
 					'final',
 					$this->visibility->value,
 					'const',
-					$this->fieldName . $defaultAsString
+					$this->fieldName . $defaultAsString,
 			);
 		} else {
 			if (!$this->phpType) {
@@ -207,7 +162,7 @@ class FieldBuilder {
 					$varParts,
 					$this->visibility->value,
 					$phpTypeWithNullableString,
-					'$' . $this->fieldName . $defaultAsString
+					'$' . $this->fieldName . $defaultAsString,
 			);
 		}
 		$fileContent .= $prependLinesBy . implode(' ', array_filter($varParts)) . ";";
@@ -218,7 +173,7 @@ class FieldBuilder {
 		return $fileContent;
 	}
 
-	public function getJsFileContent(string $prependLinesBy): string {
+	public function getJsFileContent(string $prependLinesBy = ''): string {
 		if (!$this->jsType) {
 			throw new LogicException('A JS field must have a type');
 		}
@@ -229,7 +184,7 @@ class FieldBuilder {
 		}
 
 		$fileContent = $prependLinesBy . "/** @type " . '{' . $jsTypeWithNullableString . '}' . " */\n";
-		$fileContent .= $prependLinesBy . "$this->fieldName";
+		$fileContent .= $prependLinesBy . $this->fieldName;
 		if ($this->doesDefaultValueExists()) {
 			$fileContent .= " = $this->defaultValue";
 		}

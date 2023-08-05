@@ -4,9 +4,7 @@ namespace SqlToCodeGenerator\codeGeneration\utils;
 
 use LogicException;
 
-abstract class CheckUtils {
-
-	private final function __construct() {}
+final class CheckUtils {
 
 	public static function checkPhpFullNamespace(string $fullNamespace): void {
 		if ($fullNamespace === '\\') {
@@ -14,7 +12,7 @@ abstract class CheckUtils {
 		}
 		if (preg_match(
 				'/^((?:\w+|\w+\\\\)(?:\w+\\\\?)+)$/',
-				$fullNamespace
+				$fullNamespace,
 		) !== 1) {
 			throw new LogicException(htmlentities($fullNamespace) . ' does not match a valid PHP namespace');
 		}
@@ -30,7 +28,7 @@ abstract class CheckUtils {
 		// Regex taken from https://www.php.net/manual/en/language.variables.basics.php
 		if (preg_match(
 				'/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/',
-				$fieldName
+				$fieldName,
 		) !== 1) {
 			throw new LogicException(htmlentities($fieldName) . ' does not match a valid PHP variable');
 		}
@@ -47,14 +45,22 @@ abstract class CheckUtils {
 		// Regex taken from https://stackoverflow.com/a/12011255/5649527
 		if ($phpType !== '' && preg_match(
 				'/^[\\\\]?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*(\\\\[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)*$/',
-				$phpType
+				$phpType,
 		) !== 1) {
 			throw new LogicException(htmlentities($phpType) . ' does not match a valid PHP variable');
 		}
 	}
 
 	public static function checkUniqueFields(array $fields): void {
-		$duplicates = array();
+		foreach ($fields as $field) {
+			if (!is_string($field) && !is_int($field)) {
+				throw new LogicException('A field must be a string or an integer');
+			}
+			if ($field === '') {
+				throw new LogicException('A field cannot be an empty string');
+			}
+		}
+		$duplicates = [];
 		foreach (array_count_values($fields) as $value => $count) {
 			if ($count > 1) {
 				$duplicates[] = $value;
@@ -63,6 +69,21 @@ abstract class CheckUtils {
 		if ($duplicates) {
 			throw new LogicException('Duplicates in array found: '
 					. implode(', ', $duplicates));
+		}
+	}
+
+	/**
+	 * @param mixed $value T
+	 * @param string $className class-string&lt;T&gt;
+	 * @return void
+	 */
+	public static function checkIfValueIsAClass(mixed $value, string $className): void {
+		if (!is_object($value)) {
+			throw new LogicException('Value is not an object therefore cannot belong to a class');
+		}
+		if (!is_a($value, $className)) {
+			throw new LogicException('Value does not belong to class ("'
+					. get_class($value) . '" given vs "' . $className . '" expected)');
 		}
 	}
 

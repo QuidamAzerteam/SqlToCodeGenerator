@@ -29,4 +29,39 @@ class Column {
 			public readonly ?string $generationExpression,
 	) {}
 
+	public function getTableUniqueIdentifier(): string {
+		return (new Table(
+				tableCatalog: $this->tableCatalog,
+				tableSchema: $this->tableSchema,
+				tableName: $this->tableName,
+				tableType: '',
+				engine: '',
+				version: null,
+				rowFormat: null,
+				tableRows: null,
+				avgRowLength: null,
+				dataLength: null,
+				maxDataLength: null,
+				indexLength: null,
+				dataFree: null,
+				autoIncrement: null,
+				createTime: null,
+				updateTime: null,
+				checkTime: null,
+				tableCollation: null,
+				checksum: null,
+				createOptions: null,
+				tableComment: '',
+				maxIndexLength: null,
+				temporary: null,
+		))->getUniqueIdentifier();
+	}
+
+	public function getUniqueIdentifier(): string {
+		return implode('_', [
+				$this->getTableUniqueIdentifier(),
+				$this->columnName,
+		]);
+	}
+
 }

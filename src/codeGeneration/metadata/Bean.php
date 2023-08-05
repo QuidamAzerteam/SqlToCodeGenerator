@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\codeGeneration\metadata;
 
+use DateTime;
 use LogicException;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\attribute\ClassField;
@@ -18,16 +19,21 @@ use SqlToCodeGenerator\sql\SqlDao;
 
 class Bean {
 
+	public string $sqlDatabase;
 	public string $sqlTable;
 	public string $basePackage;
 	public string $beanNamespace;
 	public string $daoNamespace;
 	/** @var BeanProperty[] */
-	public array $properties = array();
-	/** @var ForeignBean[] */
-	public array $foreignBeans = array();
+	public array $properties = [];
+	/** @var ForeignBeanField[] */
+	public array $foreignBeans = [];
 	/** @var string[][] */
-	public array $colNamesByUniqueConstraintName = array();
+	public array $colNamesByUniqueConstraintName = [];
+
+	public function getUniqueIdentifier(): string {
+		return implode('_', [$this->sqlDatabase, $this->sqlTable]);
+	}
 
 	public function getDaoName(): string {
 		return $this->getClassName() . 'Dao';
@@ -42,6 +48,7 @@ class Bean {
 				basePackage: $this->basePackage,
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
+				docLines: ['Bean of ' . $this->sqlDatabase . '.' . $this->sqlTable],
 		);
 
 		foreach ($this->properties as $property) {
@@ -51,23 +58,18 @@ class Bean {
 						ClassField::class,
 						ClassFieldEnum::class,
 				);
+			} else if (
+					$property->propertyType === BeanPropertyType::DATE
+					&& $property->defaultValueAsString !== null
+					&& $property->defaultValueAsString !== 'null'
+			) {
+				$classBuilder->addImports(DateTime::class);
 			}
 		}
 
 		if ($this->foreignBeans) {
 			foreach ($this->foreignBeans as $foreignBean) {
-				$var = lcfirst($foreignBean->toBean->getClassName());
-
-				if ($foreignBean->isArray) {
-					$foreignBeanFieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName($var))
-							->setPhpType('array')
-							->setDefaultValue('array()')
-							->setCustomTypeHint($foreignBean->toBean->getClassName() . '[]');
-				} else {
-					$foreignBeanFieldBuilder = FieldBuilder::create($var)
-							->setPhpType($foreignBean->toBean->getClassName());
-				}
-				$classBuilder->addFieldBuilders($foreignBeanFieldBuilder);
+				$classBuilder->addFieldBuilders($foreignBean->getAsFieldBuilderForPhp());
 			}
 		}
 
@@ -80,16 +82,17 @@ class Bean {
 				namespace: $this->daoNamespace,
 				name: $this->getDaoName(),
 				extends: 'SqlDao',
-				imports: array(
+				imports: [
 					LogicException::class,
 					SqlDao::class,
 					"$this->basePackage\\$this->beanNamespace\\{$this->getClassName()}",
-				),
+				],
+				docLines: [$this->sqlDatabase . '.' . $this->sqlTable . ' DAO'],
 		);
 
 		$primaryField = null;
-		$propertiesBySqlName = array();
-		$getSqlColFromFieldMatchContents = array();
+		$propertiesBySqlName = [];
+		$getSqlColFromFieldMatchContents = [];
 		foreach ($this->properties as $property) {
 			$fieldBuilder = FieldBuilder::create(strtoupper($property->sqlName) . '_SQL')
 					->setIsConst(true)
@@ -108,9 +111,9 @@ class Bean {
 				name: 'getTable',
 				returnType: 'string',
 				visibility: Visibility::PROTECTED,
-				lines: array(
+				lines: [
 					Line::create("return '$this->sqlTable';"),
-				),
+				],
 		);
 		$classBuilder->addPhpFunctionBuilders($getTableFunctionBuilder);
 
@@ -118,25 +121,25 @@ class Bean {
 				name: 'getClass',
 				returnType: 'string',
 				visibility: Visibility::PROTECTED,
-				lines: array(
+				lines: [
 					Line::create("return {$this->getClassName()}::class;"),
-				),
+				],
 		);
 		$classBuilder->addPhpFunctionBuilders($getClassFunctionBuilder);
 
 		$sqlGetterFunctionBuilder = FunctionBuilder::create(
 				name: 'get',
 				returnType: 'array',
-				lines: array(
+				lines: [
 					Line::create("return parent::get(\$where, \$groupBy, \$orderBy, \$limit);"),
-				),
+				],
 		);
 		$classBuilder->addPhpFunctionBuilders($sqlGetterFunctionBuilder);
 
-		$stringParams = array('where', 'groupBy', 'orderBy', 'limit');
+		$stringParams = ['where', 'groupBy', 'orderBy', 'limit'];
 		$documentationLines = array_map(
-				static fn (string $param) => "@param string \$$param",
-				$stringParams
+				static fn(string $param) => "@param string \$$param",
+				$stringParams,
 		);
 		$documentationLines[] = "@return {$this->getClassName()}[]";
 		$documentationLines[] = "@noinspection SenselessProxyMethodInspection because method here for type hinting";
@@ -153,13 +156,13 @@ class Bean {
 		$saveElementsFunctionBuilder = FunctionBuilder::create(
 				name: 'saveElements',
 				returnType: 'void',
-				documentationLines: array(
+				documentationLines: [
 					"@param {$this->getClassName()}[] \$elements",
 					"@noinspection SenselessProxyMethodInspection because method here for type hinting",
-				),
-				lines: array(
+				],
+				lines: [
 					Line::create("parent::saveElements(\$elements);"),
-				),
+				],
 				parameterBuilders: [FunctionParameterBuilder::create(
 						name: 'elements',
 						type: 'array',
@@ -170,12 +173,12 @@ class Bean {
 		$updateFunctionBuilder = FunctionBuilder::create(
 				name: 'update',
 				returnType: 'void',
-				documentationLines: array(
+				documentationLines: [
 					"@param {$this->getClassName()} \$item",
-				),
-				lines: array(
+				],
+				lines: [
 					Line::create("parent::updateItem(\$item);"),
-				),
+				],
 				parameterBuilders: [FunctionParameterBuilder::create(
 						name: 'item',
 						type: $this->getClassName(),
@@ -186,12 +189,12 @@ class Bean {
 		$updateFunctionBuilder = FunctionBuilder::create(
 				name: 'insert',
 				returnType: 'void',
-				documentationLines: array(
+				documentationLines: [
 					"@param {$this->getClassName()} \$item",
-				),
-				lines: array(
+				],
+				lines: [
 					Line::create("parent::insertItem(\$item);"),
-				),
+				],
 				parameterBuilders: [FunctionParameterBuilder::create(
 						name: 'item',
 						type: $this->getClassName(),
@@ -219,14 +222,14 @@ class Bean {
 		$getSqlColFromFieldFunctionBuilder->addLines(Line::create("};", -1));
 
 		if ($primaryField) {
-			$primaryFieldFunctionName = ucfirst($primaryField->getName());
+			$primaryFieldFunctionName = ucfirst(VariableUtils::getPluralOfVarName($primaryField->getName()));
 
 			$primaryFieldDeleteFunctionBuilder = FunctionBuilder::create(
 					name: "deleteThrough$primaryFieldFunctionName",
 					returnType: 'int',
-					documentationLines: array(
+					documentationLines: [
 						"@param {$this->getClassName()}[] \$elements",
-					),
+					],
 			);
 			$classBuilder->addPhpFunctionBuilders($primaryFieldDeleteFunctionBuilder);
 
@@ -236,7 +239,7 @@ class Bean {
 			));
 
 			$primaryFieldDeleteFunctionBuilder->addLines(
-					Line::create("\$uniqueKeys = array();"),
+					Line::create("\$uniqueKeys = [];"),
 					Line::create("foreach (\$elements as \$element) {"),
 					Line::create("\$uniqueKeys[\$element->{$primaryField->getName()}] = \$element->{$primaryField->getName()};", 1),
 					Line::create("}", -1),
@@ -248,26 +251,26 @@ class Bean {
 			$primaryFieldGetFunctionBuilder = FunctionBuilder::create(
 					name: "getFrom$primaryFieldFunctionName",
 					returnType: 'array',
-					documentationLines: array(
+					documentationLines: [
 						"@return {$this->getClassName()}[]",
-					),
+					],
 			);
 			$classBuilder->addPhpFunctionBuilders($primaryFieldGetFunctionBuilder);
 
 			$primaryFieldGetFunctionBuilder->addParameterBuilders(FunctionParameterBuilder::create(
 					'array',
-					$primaryFieldVarName
+					$primaryFieldVarName,
 			));
 			$primaryFieldGetFunctionBuilder->addLines(Line::create(
-					"return \$this->get('$primaryField->sqlName IN (\"' . implode('\", \"', \$$primaryFieldVarName) . '\")');"
+					"return \$this->get('$primaryField->sqlName IN (\"' . implode('\", \"', \$$primaryFieldVarName) . '\")');",
 			));
 
 			foreach ($this->colNamesByUniqueConstraintName as $colNames) {
-				$endOfMethodNames = array();
-				$uniqueFieldsParams = array();
+				$endOfMethodNames = [];
+				$uniqueFieldsParams = [];
 				foreach ($colNames as $colName) {
 					if (!array_key_exists($colName, $propertiesBySqlName)) {
-						throw new LogicException('Missing ' . $colName . ' in $mulFieldsBySqlName '
+						throw new LogicException('Missing "' . $colName . '" col in $propertiesBySqlName '
 								. 'for class ' . $this->getClassName());
 					}
 					$property = $propertiesBySqlName[$colName];
@@ -281,19 +284,19 @@ class Bean {
 				$multipleGetFunctionBuilder = FunctionBuilder::create(
 						name: "restoreIdsThrough$endOfMethodName",
 						returnType: 'void',
-						documentationLines: array(
+						documentationLines: [
 							"@see SqlDao::restoreIds",
 							"@param{$this->getClassName()}[] \$elements",
-						),
+						],
 				);
 				$classBuilder->addPhpFunctionBuilders($multipleGetFunctionBuilder);
 
 				$multipleGetFunctionBuilder->addParameterBuilders(FunctionParameterBuilder::create(
 						type: 'array',
-						name: 'elements'
+						name: 'elements',
 				));
 				$multipleGetFunctionBuilder->addLines(Line::create(
-						"\$this->restoreIds([$uniqueFieldsParam], \$elements);"
+						"\$this->restoreIds([$uniqueFieldsParam], \$elements);",
 				));
 			}
 		}
@@ -309,15 +312,15 @@ class Bean {
 			$completeFunctionBuilder = FunctionBuilder::create(
 					name: "completeWith$classNameInMethod",
 					returnType: 'void',
-					documentationLines: array(
+					documentationLines: [
 						"@param {$this->getClassName()}[] \$elements",
-					),
+					],
 			);
 			$classBuilder->addPhpFunctionBuilders($completeFunctionBuilder);
 
 			$completeFunctionBuilder->addParameterBuilders(FunctionParameterBuilder::create(
 					type: 'array',
-					name: 'elements'
+					name: 'elements',
 			));
 
 			$field = $foreignBean->isArray
@@ -325,16 +328,16 @@ class Bean {
 					: $foreignBean->toBean->getClassName();
 
 			$completeFunctionBuilder->addLines(
-					Line::create("\$fkIds = array();"),
+					Line::create("\$fkIds = [];"),
 					Line::create("foreach (\$elements as \$element) {"),
 					Line::create("\$fkIds[\$element->$foreignBeanWithPropertyName] = \$element->$foreignBeanWithPropertyName;", 1),
 					Line::create("}", -1),
 					Line::create("\$fkDao = new {$foreignBean->toBean->getDaoName()}();"),
 					Line::create("\$fkElements = \$fkDao->get('$foreignBeanOnPropertySqlName IN (\"' . implode('\", \"', \$fkIds) . '\")');"),
-					Line::create("\$fkElementsByFkProperty = array();"),
+					Line::create("\$fkElementsByFkProperty = [];"),
 					Line::create("foreach (\$fkElements as \$fkElement) {"),
 					Line::create("if (!array_key_exists(\$fkElement->$foreignBeanOnPropertyName, \$fkElementsByFkProperty)) {", 1),
-					Line::create("\$fkElementsByFkProperty[\$fkElement->$foreignBeanOnPropertyName] = array();", 1),
+					Line::create("\$fkElementsByFkProperty[\$fkElement->$foreignBeanOnPropertyName] = [];", 1),
 					Line::create("}", -1),
 					Line::create("\$fkElementsByFkProperty[\$fkElement->$foreignBeanOnPropertyName][] = \$fkElement;"),
 					Line::create("}", -1),
@@ -343,8 +346,8 @@ class Bean {
 			if ($foreignBean->isArray) {
 				$completeFunctionBuilder->addLines(
 						Line::create(
-								"\$element->" . lcfirst($field) . " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? array();",
-								1
+								"\$element->" . lcfirst($field) . " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? [];",
+								1,
 						),
 						Line::create("foreach (\$element->" . lcfirst($field) . " as \$fkElement) {"),
 						Line::create("\$fkElement->" . lcfirst($this->getClassName()) . " = \$element;", 1),
@@ -368,37 +371,30 @@ class Bean {
 				basePackage: $this->basePackage,
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
+				docLines: ['Bean of ' . $this->sqlDatabase . '.' . $this->sqlTable],
 		);
 
 		foreach ($this->properties as $property) {
 			$classBuilder->addFieldBuilders($property->getFieldBuilder());
 		}
 		foreach ($this->foreignBeans as $foreignBean) {
-			$var = lcfirst($foreignBean->toBean->getClassName());
-
-			if ($foreignBean->isArray) {
-				$fieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName($var))
-						->setJsType($foreignBean->toBean->getClassName() . '[]');
-			} else {
-				$fieldBuilder = FieldBuilder::create($var)->setJsType($foreignBean->toBean->getClassName());
-			}
-			$classBuilder->addFieldBuilders($fieldBuilder);
+			$classBuilder->addFieldBuilders($foreignBean->getAsFieldBuilderForJs());
 		}
 
 		$jsFunctionBuilder = FunctionBuilder::create(
 				name: 'getInstanceFromObject',
 				returnType: $this->getClassName(),
 				isStatic: true,
-				parameterBuilders: array(
+				parameterBuilders: [
 					FunctionParameterBuilder::create(
 							type: '',
 							name: 'rawObject',
 							defaultValue: '',
 					),
-				),
-				lines: array(
+				],
+				lines: [
 					Line::create("return Object.assign(new {$this->getClassName()}(), rawObject);"),
-				),
+				],
 		);
 		$classBuilder->addJsFunctionBuilders($jsFunctionBuilder);
 
@@ -411,19 +407,19 @@ class Bean {
 				namespace: $this->beanNamespace,
 				name: "{$this->getClassName()}Test",
 				extends: 'TestCase',
-				imports: array(
+				imports: [
 					TestCase::class,
 					"$this->basePackage\\$this->beanNamespace\\{$this->getClassName()}",
-				),
+				],
 		);
 
 		$phpFunctionBuilder = FunctionBuilder::create(
 				name: 'testConstructor',
 				returnType: 'void',
 				isFinal: true,
-				lines: array(
+				lines: [
 					Line::create("\$this->assertNotNull({$this->getClassName()}::class);"),
-				),
+				],
 		);
 		$classBuilder->addPhpFunctionBuilders($phpFunctionBuilder);
 
@@ -436,20 +432,20 @@ class Bean {
 				namespace: $this->beanNamespace,
 				name: $this->getDaoName() . 'Test',
 				extends: 'TestCase',
-				imports: array(
+				imports: [
 					TestCase::class,
 					PdoContainer::class,
 					"$this->basePackage\\$this->daoNamespace\\{$this->getDaoName()}",
-				),
+				],
 		);
 
 		$phpFunctionBuilder = FunctionBuilder::create(
 				name: 'testConstructor',
 				returnType: 'void',
 				isFinal: true,
-				lines: array(
+				lines: [
 					Line::create("\$this->assertNotNull(new {$this->getDaoName()}(\$this->createMock(PdoContainer::class)));"),
-				),
+				],
 		);
 		$classBuilder->addPhpFunctionBuilders($phpFunctionBuilder);
 

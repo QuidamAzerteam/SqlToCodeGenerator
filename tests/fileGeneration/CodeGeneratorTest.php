@@ -27,7 +27,7 @@ class CodeGeneratorTest extends TestCase {
 
 	public function testEmptyGeneration(): void {
 		$pdoStatement = $this->createMock(PDOStatement::class);
-		$pdoStatement->method('fetchAll')->willReturn(array());
+		$pdoStatement->method('fetchAll')->willReturn([]);
 
 		$pdo = $this->createMock(PDO::class);
 		$pdo->method('prepare')->willReturn($pdoStatement);
@@ -65,15 +65,16 @@ class CodeGeneratorTest extends TestCase {
 
 	public function testSimpleBeanGeneration(): void {
 		$pdoStatement = $this->createMock(PDOStatement::class);
-		$pdoStatement->method('fetchAll')->willReturn(array());
+		$pdoStatement->method('fetchAll')->willReturn([]);
 
 		$pdo = $this->createMock(PDO::class);
 		$pdo->method('prepare')->willReturn($pdoStatement);
 
 		$sqlToMetaCodeDao = $this->createMock(SqlToMetaCodeDao::class);
 		$bean = new Bean();
+		$bean->sqlDatabase = 'sq_database';
 		$bean->sqlTable = 'sql_table';
-		$sqlToMetaCodeDao->method('getBeansFromSql')->willReturn(array($bean));
+		$sqlToMetaCodeDao->method('getBeansFromSql')->willReturn([$bean]);
 
 		$generator = CodeGenerator::create(
 				sqlToMetaCodeDao: $sqlToMetaCodeDao,

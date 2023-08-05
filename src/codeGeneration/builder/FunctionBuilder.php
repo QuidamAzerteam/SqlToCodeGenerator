@@ -18,14 +18,14 @@ class FunctionBuilder {
 	 * @param string[] $documentationLines
 	 */
 	public function __construct(
-			readonly private string $name,
-			readonly private string $returnType,
-			private Visibility $visibility = Visibility::PUBLIC,
-			private bool $isStatic = false,
-			private bool $isFinal = false,
-			private array $parameterBuilders = array(),
-			private array $lines = array(),
-			private array $documentationLines = array()
+			private readonly string $name,
+			private readonly string $returnType,
+			private readonly Visibility $visibility = Visibility::PUBLIC,
+			private readonly bool $isStatic = false,
+			private readonly bool $isFinal = false,
+			private array $parameterBuilders = [],
+			private array $lines = [],
+			private array $documentationLines = [],
 	) {}
 
 	/**
@@ -37,9 +37,9 @@ class FunctionBuilder {
 			Visibility $visibility = Visibility::PUBLIC,
 			bool $isStatic = false,
 			bool $isFinal = false,
-			array $parameterBuilders = array(),
-			array $lines = array(),
-			array $documentationLines = array()
+			array $parameterBuilders = [],
+			array $lines = [],
+			array $documentationLines = [],
 	): static {
 		return new static(
 				name: $name,
@@ -53,73 +53,8 @@ class FunctionBuilder {
 		);
 	}
 
-	public function getName(): string {
-		return $this->name;
-	}
-
-	public function getReturnType(): string {
-		return $this->returnType;
-	}
-
-	public function getVisibility(): Visibility {
-		return $this->visibility;
-	}
-
-	public function setVisibility(Visibility $visibility): static {
-		$this->visibility = $visibility;
-		return $this;
-	}
-
-	public function isStatic(): bool {
-		return $this->isStatic;
-	}
-
-	public function setIsStatic(bool $isStatic): static {
-		$this->isStatic = $isStatic;
-		return $this;
-	}
-
-	public function isFinal(): bool {
-		return $this->isFinal;
-	}
-
-	public function setIsFinal(bool $isFinal): static {
-		$this->isFinal = $isFinal;
-		return $this;
-	}
-
-	/**
-	 * @return FunctionParameterBuilder[]
-	 */
-	public function getParameterBuilders(): array {
-		return $this->parameterBuilders;
-	}
-
-	/**
-	 * @param FunctionParameterBuilder[] $parameterBuilders
-	 */
-	public function setParameterBuilders(array $parameterBuilders): static {
-		$this->parameterBuilders = $parameterBuilders;
-		return $this;
-	}
-
 	public function addParameterBuilders(FunctionParameterBuilder ...$parameterBuilders): static {
 		array_push($this->parameterBuilders, ...$parameterBuilders);
-		return $this;
-	}
-
-	/**
-	 * @return Line[]
-	 */
-	public function getLines(): array {
-		return $this->lines;
-	}
-
-	/**
-	 * @param Line[] $lines
-	 */
-	public function setLines(array $lines): static {
-		$this->lines = $lines;
 		return $this;
 	}
 
@@ -128,29 +63,14 @@ class FunctionBuilder {
 		return $this;
 	}
 
-	/**
-	 * @return string[]
-	 */
-	public function getDocumentationLines(): array {
-		return $this->documentationLines;
-	}
-
-	/**
-	 * @param string[] $documentationLines
-	 */
-	public function setDocumentationLines(array $documentationLines): static {
-		$this->documentationLines = $documentationLines;
-		return $this;
-	}
-
 	public function addDocumentationLines(string ...$documentationLines): static {
 		array_push($this->documentationLines, ...$documentationLines);
 		return $this;
 	}
 
-	public function getPhpFileContent(string $baseIndentation): string {
+	public function getPhpFileContent(string $baseIndentation = ''): string {
 		$fileContent = '';
-		
+
 		if ($this->documentationLines) {
 			$fileContent .= $baseIndentation . "/**\n";
 			foreach ($this->documentationLines as $documentationLine) {
@@ -176,44 +96,55 @@ class FunctionBuilder {
 			$fileContent .= "$functionDeclaration$baseIndentation";
 		}
 
-		$fileContent .= "): $this->returnType {\n";
+		$fileContent .= "): $this->returnType {";
 
-		$increment = substr_count($baseIndentation, "\t") + 1;
-		foreach ($this->lines as $lineBuilder) {
-			$increment += $lineBuilder->incrementModifierFromPreviousLine;
-			$fileContent .= str_repeat("\t", $increment) . $lineBuilder->content . "\n";
+		if ($this->lines) {
+			$fileContent .= "\n";
+			$increment = substr_count($baseIndentation, "\t") + 1;
+			foreach ($this->lines as $lineBuilder) {
+				$increment += $lineBuilder->incrementModifierFromPreviousLine;
+				$fileContent .= str_repeat("\t", $increment) . $lineBuilder->content . "\n";
+			}
+			return "$fileContent$baseIndentation}";
 		}
-
-		return "$fileContent$baseIndentation}";
+		return $fileContent . "}";
 	}
 
-	public function getJsFileContent(string $baseIndentation): string {
+	public function getJsFileContent(string $baseIndentation = ''): string {
 		$fileContent = $baseIndentation . "/**\n";
 
 		foreach ($this->documentationLines as $documentationLine) {
 			$fileContent .= $baseIndentation . " * $documentationLine\n";
 		}
 		foreach ($this->parameterBuilders as $parameterBuilder) {
-			$fileContent .= $baseIndentation . "{$parameterBuilder->getJsDocFileContent("\t")}\n";
+			$fileContent .= $baseIndentation . "{$parameterBuilder->getJsDocFileContent()}\n";
 		}
 		$fileContent .= $baseIndentation . " * @return " . '{' . $this->returnType . '}' . "\n";
 		$fileContent .= $baseIndentation . " */\n";
 
-		$parametersAsStrings = array();
+		$parametersAsStrings = [];
 		foreach ($this->parameterBuilders as $parameterBuilder) {
-			$parametersAsStrings[] = "{$parameterBuilder->getJsParamFileContent()}\n";
+			$parametersAsString = "{$parameterBuilder->getJsParamFileContent()}";
+			if (count($this->parameterBuilders) > 1) {
+				$parametersAsString .= "\n";
+			}
+			$parametersAsStrings[] = $parametersAsString;
 		}
+		$postParametersIndentation = count($parametersAsStrings) > 1 ? $baseIndentation : '';
 		$fileContent .= $baseIndentation . ($this->isStatic ? 'static ' : '')
-				. "$this->name(" . implode(', ', $parametersAsStrings) . ") {\n";
+				. "$this->name(" . implode(', ', $parametersAsStrings) . "$postParametersIndentation) {";
 
-		$increment = substr_count($baseIndentation, "\t") + 1;
-		foreach ($this->lines as $lineBuilder) {
-			$increment += $lineBuilder->incrementModifierFromPreviousLine;
-			$fileContent .= str_repeat("\t", $increment) . $lineBuilder->content . "\n";
+		if ($this->lines) {
+			$fileContent .= "\n";
+			$increment = substr_count($baseIndentation, "\t") + 1;
+			foreach ($this->lines as $lineBuilder) {
+				$increment += $lineBuilder->incrementModifierFromPreviousLine;
+				$fileContent .= str_repeat("\t", $increment) . $lineBuilder->content . "\n";
+			}
+			return "$fileContent$baseIndentation}";
 		}
-		$fileContent .= $baseIndentation . "}";
 
-		return $fileContent;
+		return $fileContent . "}";
 	}
 
 }

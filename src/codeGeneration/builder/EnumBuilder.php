@@ -6,24 +6,22 @@ use SqlToCodeGenerator\codeGeneration\utils\CheckUtils;
 
 class EnumBuilder extends FileBuilder {
 
-	/** @var string[] */
-	private array $fields;
-
 	/**
+	 * Use {@see create} instead
 	 * @param string[] $fields
-	 * @see parent::__construct
+	 * @see create
 	 */
-	public function __construct(
+	protected function __construct(
 			string $basePackage,
 			string $namespace,
 			string $name,
-			array $imports = array(),
+			array $imports = [],
 			?string $extends = null,
 			?string $implements = null,
-			array $phpFunctionBuilders = array(),
-			array $jsFunctionBuilders = array(),
-			array $docLines = array(),
-			array $fields = array()
+			array $phpFunctionBuilders = [],
+			array $jsFunctionBuilders = [],
+			array $docLines = [],
+			private readonly array $fields = [],
 	) {
 		parent::__construct(
 				basePackage: $basePackage,
@@ -40,7 +38,6 @@ class EnumBuilder extends FileBuilder {
 		foreach ($fields as $field) {
 			CheckUtils::checkPhpType($field);
 		}
-		$this->fields = $fields;
 	}
 
 	/**
@@ -50,13 +47,13 @@ class EnumBuilder extends FileBuilder {
 			string $basePackage,
 			string $namespace,
 			string $name,
-			array $imports = array(),
+			array $imports = [],
 			?string $extends = null,
 			?string $implements = null,
-			array $phpFunctionBuilders = array(),
-			array $jsFunctionBuilders = array(),
-			array $docLines = array(),
-			array $fields = array()
+			array $phpFunctionBuilders = [],
+			array $jsFunctionBuilders = [],
+			array $docLines = [],
+			array $fields = [],
 	): static {
 		return new static(
 				basePackage: $basePackage,
@@ -72,56 +69,27 @@ class EnumBuilder extends FileBuilder {
 		);
 	}
 
-	/**
-	 * @return string[]
-	 */
-	public function getFields(): array {
-		return $this->fields;
-	}
-
-	/**
-	 * @param string[] $fields
-	 */
-	public function setFields(array $fields): static {
-		$this->fields = $fields;
-		return $this;
-	}
-
-	public function addFields(string ...$fields): static {
-		foreach ($fields as $field) {
-			CheckUtils::checkPhpType($field);
-			$this->fields[] = $field;
-		}
-		CheckUtils::checkUniqueFields($this->fields);
-		return $this;
-	}
-
 	public function getFileTypeWithName(): string {
-		return "enum $this->name: string";
+		return "enum $this->name";
 	}
 
 	public function getFieldsPhpFileContent(): string {
-		$fileContent = '';
-		if ($this->fields) {
-			foreach ($this->fields as $field) {
-				$fileContent .= "	case $field = '$field';\n";
-			}
-			$fileContent .= "\n";
-		}
-		return $fileContent;
+		return $this->fields
+				? implode("\n", array_map(
+						static fn(string $field): string => "case $field;",
+						$this->fields,
+				)) . "\n"
+				: '';
 	}
 
 	public function getFieldsJsFileContent(): string {
-		$fileContent = '';
-
-		foreach ($this->fields as $index => $field) {
-			$fileContent .= "	static get $field() {\n		return " . ($index + 1) . ";\n	}";
-			if ($index !== count($this->fields) - 1) {
-				$fileContent .= "\n";
-			}
-		}
-
-		return $fileContent;
+		return $this->fields
+				? implode("\n", array_map(
+						static fn(int $index, string $field): string => "\tstatic get $field() {\n\t\treturn " . ($index + 1) . ";\n\t}",
+						array_keys($this->fields),
+						$this->fields,
+				))
+				: '';
 	}
 
 }
