@@ -14,4 +14,4 @@ All needed parameters are documented in the constructor
 
 # Resources
 
-- [PHP Unit version 9.5 docs](https://phpunit.readthedocs.io/en/9.5/)
+- [PHP Unit version 10.3 docs](https://docs.phpunit.de/en/10.3/)

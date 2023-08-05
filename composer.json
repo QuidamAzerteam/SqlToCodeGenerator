@@ -16,7 +16,7 @@
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
-        "phpunit/phpunit": "^10.2"
+        "phpunit/phpunit": "^10.3"
     },
     "require": {
         "php": "8.1.*",
