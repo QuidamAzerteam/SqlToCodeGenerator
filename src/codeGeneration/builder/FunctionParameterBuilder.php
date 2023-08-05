@@ -30,9 +30,9 @@ class FunctionParameterBuilder {
 
 	public function getJsDocFileContent(string $baseIndentation = ''): string {
 		if ($this->defaultValue) {
-			return $baseIndentation . " * @param " . '{' . $this->type . '}' . " [$this->name=$this->defaultValue]";
+			return "$baseIndentation * @param {{$this->type}} [$this->name=$this->defaultValue]";
 		}
-		return $baseIndentation . " * @param " . '{' . $this->type . '}' . " $this->name";
+		return "$baseIndentation * @param {{$this->type}} $this->name";
 	}
 
 	public function getJsParamFileContent(): string {

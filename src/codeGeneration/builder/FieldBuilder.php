@@ -183,7 +183,7 @@ class FieldBuilder {
 			$jsTypeWithNullableString .= '|null';
 		}
 
-		$fileContent = $prependLinesBy . "/** @type " . '{' . $jsTypeWithNullableString . '}' . " */\n";
+		$fileContent = "$prependLinesBy/** @type {{$jsTypeWithNullableString}} */\n";
 		$fileContent .= $prependLinesBy . $this->fieldName;
 		if ($this->doesDefaultValueExists()) {
 			$fileContent .= " = $this->defaultValue";

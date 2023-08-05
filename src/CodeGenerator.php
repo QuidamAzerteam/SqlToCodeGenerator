@@ -17,7 +17,9 @@ class CodeGenerator {
 	/**
 	 * @param SqlToMetaCodeDao $sqlToMetaCodeDao
 	 * @param LoggerInterface $log
-	 * @param string $basePackage Root package. For instance, if it's `MyPackage`, generated code will have as namespace `MyPackage\{@see $genDirName}\{@see $beanDirName}`
+	 * @param string $basePackage Root package.
+	 * For instance, if it's `MyPackage`, generated code will have as namespace
+	 * `MyPackage\{@see $genDirName}\{@see $beanDirName}`
 	 * @param string $phpSourceDirectory Relative from root directory
 	 * @param string|null $jsSourceDirectory Relative from root directory. Set as null to avoid generating JS sources
 	 * @param string $genDirName For PHP and JS sources

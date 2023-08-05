@@ -133,7 +133,7 @@ abstract class SqlDao {
 			$item = new $className();
 			$itemReflection = new ReflectionObject($item);
 			foreach ($row as $colKey => $colValue) {
-				$field = lcfirst(self::sqlToCamelCase($colKey));
+				$field = lcfirst(static::sqlToCamelCase($colKey));
 
 				if ($colValue === null) {
 					$item->$field = null;

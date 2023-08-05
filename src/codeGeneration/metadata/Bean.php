@@ -216,9 +216,13 @@ class Bean {
 
 		$getSqlColFromFieldFunctionBuilder->addLines(Line::create("return match (\$field) {"));
 		foreach ($getSqlColFromFieldMatchContents as $index => $getSqlColFromFieldMatchContent) {
-			$getSqlColFromFieldFunctionBuilder->addLines(Line::create("$getSqlColFromFieldMatchContent,", $index === 0 ? 1 : 0));
+			$getSqlColFromFieldFunctionBuilder->addLines(Line::create(
+					"$getSqlColFromFieldMatchContent,", $index === 0 ? 1 : 0,
+			));
 		}
-		$getSqlColFromFieldFunctionBuilder->addLines(Line::create("default => throw new LogicException('Unexpected field: ' . \$field),"));
+		$getSqlColFromFieldFunctionBuilder->addLines(Line::create(
+				"default => throw new LogicException('Unexpected field: ' . \$field),",
+		));
 		$getSqlColFromFieldFunctionBuilder->addLines(Line::create("};", -1));
 
 		if ($primaryField) {
@@ -270,8 +274,8 @@ class Bean {
 				$uniqueFieldsParams = [];
 				foreach ($colNames as $colName) {
 					if (!array_key_exists($colName, $propertiesBySqlName)) {
-						throw new LogicException('Missing "' . $colName . '" col in $propertiesBySqlName '
-								. 'for class ' . $this->getClassName());
+						throw new LogicException("Missing \"{$colName}\" col in "
+								. "\$propertiesBySqlName for class {$this->getClassName()}");
 					}
 					$property = $propertiesBySqlName[$colName];
 
