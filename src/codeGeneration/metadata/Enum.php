@@ -7,6 +7,7 @@ use SqlToCodeGenerator\codeGeneration\bean\Line;
 use SqlToCodeGenerator\codeGeneration\builder\ClassBuilder;
 use SqlToCodeGenerator\codeGeneration\builder\EnumBuilder;
 use SqlToCodeGenerator\codeGeneration\builder\FunctionBuilder;
+use SqlToCodeGenerator\codeGeneration\builder\FunctionParameterBuilder;
 
 class Enum {
 
@@ -43,7 +44,7 @@ class Enum {
 	public function getPhpFileContent(): string {
 		$enumBuilder = $this->getBaseEnumBuilder();
 
-		$phpFunctionBuilder = FunctionBuilder::create(
+		$getShortTextFunction = FunctionBuilder::create(
 				name: 'getShortText',
 				returnType: 'string',
 				isFinal: true,
@@ -51,7 +52,24 @@ class Enum {
 					Line::create("return match(\$this) {"),
 				],
 		);
-		$enumBuilder->addPhpFunctionBuilders($phpFunctionBuilder);
+		$enumBuilder->addPhpFunctionBuilders($getShortTextFunction);
+		$tryFromFunction = FunctionBuilder::create(
+				name: 'tryFrom',
+				returnType: '?self',
+				isStatic: true,
+				parameterBuilders: [FunctionParameterBuilder::create(
+						name: 'value',
+						type: 'string',
+				)],
+				lines: [
+					Line::create("return array_filter("),
+					Line::create("$this->name::cases(),", 2),
+					Line::create("static fn($this->name \$case): bool => strcasecmp(\$case->name, \$value) === 0,"),
+					Line::create(")[0] ?? null;", -2),
+				],
+		);
+		$enumBuilder->addPhpFunctionBuilders($tryFromFunction);
+
 
 		foreach ($this->values as $valueIndex => $value) {
 			$valueAsShortText = ucwords(
@@ -60,13 +78,13 @@ class Enum {
 							explode('_', strtolower($value)),
 					),
 			);
-			$phpFunctionBuilder->addLines(Line::create(
+			$getShortTextFunction->addLines(Line::create(
 					"self::$value => '$valueAsShortText',",
 					// Only first line get increment
 					$valueIndex === 0 ? 1 : 0,
 			));
 		}
-		$phpFunctionBuilder->addLines(Line::create("};", -1));
+		$getShortTextFunction->addLines(Line::create("};", -1));
 
 		return $enumBuilder->getPhpFileContent();
 	}
