@@ -21,7 +21,7 @@ class SqlToMetaCodeDao {
 	public function __construct(
 			private readonly PdoContainer $pdoContainer,
 			private readonly string $bdd,
-			private readonly array $tablesToIgnore = array(),
+			private readonly array $tablesToIgnore = [],
 	) {}
 
 	private function getTableNameNoIntSql(string $tableNameCol): string {
@@ -47,7 +47,7 @@ class SqlToMetaCodeDao {
 		$statement->execute();
 
 		return array_map(
-				static fn (array $sqlRow): Table => new Table(
+				static fn(array $sqlRow): Table => new Table(
 						tableCatalog: $sqlRow['TABLE_CATALOG'],
 						tableSchema: $sqlRow['TABLE_SCHEMA'],
 						tableName: $sqlRow['TABLE_NAME'],
@@ -72,7 +72,7 @@ class SqlToMetaCodeDao {
 						maxIndexLength: $sqlRow['MAX_INDEX_LENGTH'],
 						temporary: $sqlRow['TEMPORARY'],
 				),
-				$statement->fetchAll(PDO::FETCH_ASSOC)
+				$statement->fetchAll(PDO::FETCH_ASSOC),
 		);
 	}
 
@@ -87,9 +87,9 @@ class SqlToMetaCodeDao {
 					. implode(
 							'", "',
 							array_map(
-									static fn (Table $table): string => $table->tableName,
-									$fromTables
-							)
+									static fn(Table $table): string => $table->tableName,
+									$fromTables,
+							),
 					) . '")';
 		}
 
@@ -104,7 +104,7 @@ class SqlToMetaCodeDao {
 		$statement->execute();
 
 		return array_map(
-				static fn (array $sqlRow): Column => new Column(
+				static fn(array $sqlRow): Column => new Column(
 						tableCatalog: $sqlRow['TABLE_CATALOG'],
 						tableSchema: $sqlRow['TABLE_SCHEMA'],
 						tableName: $sqlRow['TABLE_NAME'],
@@ -128,7 +128,7 @@ class SqlToMetaCodeDao {
 						isGenerated: $sqlRow['IS_GENERATED'],
 						generationExpression: $sqlRow['GENERATION_EXPRESSION'],
 				),
-				$statement->fetchAll(PDO::FETCH_ASSOC)
+				$statement->fetchAll(PDO::FETCH_ASSOC),
 		);
 	}
 
@@ -152,7 +152,7 @@ class SqlToMetaCodeDao {
 		$statement->execute();
 
 		return array_map(
-				static fn (array $sqlRow): KeyColumnUsage => new KeyColumnUsage(
+				static fn(array $sqlRow): KeyColumnUsage => new KeyColumnUsage(
 						constraintCatalog: $sqlRow['CONSTRAINT_CATALOG'],
 						constraintSchema: $sqlRow['CONSTRAINT_SCHEMA'],
 						constraintName: $sqlRow['CONSTRAINT_NAME'],
@@ -166,7 +166,7 @@ class SqlToMetaCodeDao {
 						referencedTableName: $sqlRow['REFERENCED_TABLE_NAME'],
 						referencedColumnName: $sqlRow['REFERENCED_COLUMN_NAME'],
 				),
-				$statement->fetchAll(PDO::FETCH_ASSOC)
+				$statement->fetchAll(PDO::FETCH_ASSOC),
 		);
 	}
 
@@ -178,7 +178,7 @@ class SqlToMetaCodeDao {
 		return SqlToMetaCodeUtils::getBeansFromMetaCodeBeans(
 				$tables,
 				$this->getColumns($tables),
-				$this->getKeyColumnUsages()
+				$this->getKeyColumnUsages(),
 		);
 	}
 

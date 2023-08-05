@@ -3,6 +3,7 @@
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\builder\FunctionParameterBuilder;
 
@@ -14,10 +15,9 @@ class FunctionParameterBuilderPhpTest extends TestCase {
 				name: 'name',
 		);
 
-		$expected = 'type $name';
 		$this->assertSame(
-				$expected,
-				$functionParameterBuilder->getPhpFileContent()
+				'type $name',
+				$functionParameterBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -45,9 +45,7 @@ class FunctionParameterBuilderPhpTest extends TestCase {
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testDefaultValue(): void {
 		$functionParameterBuilder = FunctionParameterBuilder::create(
 				type: 'type',
@@ -55,10 +53,9 @@ class FunctionParameterBuilderPhpTest extends TestCase {
 				defaultValue: 'hello world',
 		);
 
-		$expected = "{$functionParameterBuilder->getType()} \${$functionParameterBuilder->getName()} = hello world";
 		$this->assertSame(
-				$expected,
-				$functionParameterBuilder->getPhpFileContent()
+				"type \$name = hello world",
+				$functionParameterBuilder->getPhpFileContent(),
 		);
 	}
 

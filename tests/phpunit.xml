@@ -1,25 +1,34 @@
 <?xml version="1.0"?>
 <phpunit
-		bootstrap="../vendor/autoload.php"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+		xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd"
+		bootstrap="../vendor/autoload.php"
+		stopOnNotice="true"
+		failOnNotice="true"
+		defaultTestSuite="all"
 >
 
 	<coverage pathCoverage="true">
-		<include>
-			<directory suffix=".php">../src</directory>
-		</include>
 		<report>
 			<clover outputFile="generatedReports/coverage.xml"/>
+			<html outputDirectory="generatedReports/html"/>
 		</report>
 	</coverage>
-
-	<testsuite name="All test files">
-		<directory>./</directory>
-	</testsuite>
 
 	<logging>
 		<junit outputFile="generatedReports/junit.xml"/>
 	</logging>
 
+	<testsuite name="all">
+		<directory>./</directory>
+	</testsuite>
+
+	<source>
+		<include>
+			<directory>../src</directory>
+		</include>
+		<exclude>
+			<file>src/sql/PdoContainer.php</file>
+		</exclude>
+	</source>
 </phpunit>

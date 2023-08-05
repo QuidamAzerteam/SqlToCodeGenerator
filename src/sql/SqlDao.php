@@ -2,7 +2,6 @@
 
 namespace SqlToCodeGenerator\sql;
 
-use BackedEnum;
 use DateTime;
 use Exception;
 use LogicException;
@@ -14,17 +13,25 @@ use ReflectionObject;
 use ReflectionProperty;
 use SqlToCodeGenerator\codeGeneration\attribute\ClassField;
 use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
+use UnitEnum;
 
+/**
+ * @template T
+ */
 abstract class SqlDao {
 
-	abstract protected function getTable(): string;
-	abstract protected function getClass(): string;
-
-	private PdoContainer $pdoContainer;
+	private readonly PdoContainer $pdoContainer;
 
 	public function __construct(PdoContainer $pdoContainer = null) {
 		$this->pdoContainer = $pdoContainer ?: SqlUtils::getPdoContainer();
 	}
+
+	abstract protected function getTable(): string;
+
+	/**
+	 * @return class-string<T>
+	 */
+	abstract protected function getClass(): string;
 
 	private function getPdo(): PDO {
 		return $this->pdoContainer->getPdo();
@@ -70,15 +77,22 @@ abstract class SqlDao {
 		return $this->getPdo()->query('SELECT FOUND_ROWS()')->fetchColumn();
 	}
 
-	public function lastInsertedId(): int {
+	public function lastInsertedId(): string|false {
 		return $this->getPdo()->lastInsertId();
 	}
 
 	public function fetchFromQuery(string $query): array {
 		return $this->getPdo()->query(
 				$query,
-				PDO::FETCH_ASSOC
+				PDO::FETCH_ASSOC,
 		)->fetchAll();
+	}
+
+	/**
+	 * @return string[]
+	 */
+	private static function getNotPdoCompatibleTypes(): array {
+		return ['array', 'callable', 'iterable', 'object', 'mixed'];
 	}
 
 	/**
@@ -86,7 +100,7 @@ abstract class SqlDao {
 	 * @param string $groupBy
 	 * @param string $orderBy
 	 * @param string $limit
-	 * @return array
+	 * @return T[]
 	 */
 	public function get(
 			string $where = '',
@@ -110,11 +124,11 @@ abstract class SqlDao {
 		}
 		$statement = $this->getPdo()->query(
 				$query,
-				PDO::FETCH_ASSOC
+				PDO::FETCH_ASSOC,
 		);
 		$result = $statement->fetchAll();
 		$className = $this->getClass();
-		$items = array();
+		$items = [];
 		foreach ($result as $row) {
 			$item = new $className();
 			$itemReflection = new ReflectionObject($item);
@@ -128,9 +142,11 @@ abstract class SqlDao {
 					// https://www.php.net/manual/en/language.types.declarations.php
 					$typeName = $property->getType()?->getName();
 
-					$item->$field = match($typeName) {
-						'array', 'callable', 'iterable', 'object', 'mixed' => throw new LogicException("PDO cannot return $typeName"),
+					if (in_array($typeName, self::getNotPdoCompatibleTypes(), true)) {
+						throw new LogicException("PDO cannot return $typeName");
+					}
 
+					$item->$field = match ($typeName) {
 						'bool' => (bool) $colValue,
 						'float' => (float) $colValue,
 						'int' => (int) $colValue,
@@ -141,13 +157,15 @@ abstract class SqlDao {
 							try {
 								$maybeItsAClass = new ReflectionClass($typeName);
 								if ($maybeItsAClass->isEnum()) {
-									return $colValue !== null
-											? $maybeItsAClass
-													->getMethod('from')
-													->invoke(null, $colValue)
-											: $colValue;
+									foreach ($maybeItsAClass->getMethod('cases')->invoke(null) as $case) {
+										if ($case->name === $colValue) {
+											return $case;
+										}
+									}
+									throw new LogicException("Value '$colValue' not found in enum: $typeName");
 								}
-							} catch (ReflectionException) {}
+							} catch (ReflectionException) {
+							}
 
 							throw new LogicException("PDO type return not implemented: $typeName");
 						})()
@@ -169,12 +187,12 @@ abstract class SqlDao {
 	/**
 	 * Set primary key to what exists in database bases on unique key(s)
 	 * @param string[] $uniqueFields
-	 * @param array $elements
+	 * @param T[] $elements
 	 * @return void
 	 */
 	protected function restoreIds(
 			array $uniqueFields,
-			array $elements
+			array $elements,
 	): void {
 		if (!$elements) {
 			return;
@@ -182,24 +200,24 @@ abstract class SqlDao {
 		$uniqueKeyFromElement = static function ($element) use ($uniqueFields) {
 			return implode('_', array_map(
 					static function ($uniqueField) use ($element) {
-						return $element->$uniqueField instanceof BackedEnum
-								? $element->$uniqueField->value
+						return $element->$uniqueField instanceof UnitEnum
+								? $element->$uniqueField->name
 								: $element->$uniqueField;
 					},
-					$uniqueFields
+					$uniqueFields,
 			));
 		};
 
-		$elementsByUniqueFieldsKey = array();
-		$allWheres = array();
+		$elementsByUniqueFieldsKey = [];
+		$allWheres = [];
 		foreach ($elements as $element) {
 			$elementsByUniqueFieldsKey[$uniqueKeyFromElement($element)] = $element;
 
-			$wheres = array();
+			$wheres = [];
 			foreach ($uniqueFields as $uniqueField) {
 				$fieldAsSql = static::getSqlColFromField($uniqueField);
-				$value = $element->$uniqueField instanceof BackedEnum
-						? $element->$uniqueField->value
+				$value = $element->$uniqueField instanceof UnitEnum
+						? $element->$uniqueField->name
 						: $element->$uniqueField;
 				$wheres[] = "`$fieldAsSql` = '$value'";
 			}
@@ -234,24 +252,28 @@ abstract class SqlDao {
 								'string',
 								'DateTime',
 							],
-							true
+							true,
 					);
 					if ($isPrimitiveField) {
 						return true;
 					}
-					if ($name === 'array') {
+					if ($name === null || in_array($name, self::getNotPdoCompatibleTypes(), true)) {
 						return false;
 					}
 					return (new ReflectionClass($name))->isEnum();
-				}
+				},
 		);
 	}
 
+	/**
+	 * @param T $item
+	 * @return void
+	 */
 	public function updateItem(mixed $item): void {
 		$table = $this->getTable();
 
 		$primaryReflectionProperty = null;
-		$sqlSetValues = array();
+		$sqlSetValues = [];
 		foreach ($this->getReflectionProperties() as $reflectionProperty) {
 			if ($this->isReflectionPropertyPrimary($reflectionProperty)) {
 				$primaryReflectionProperty = $reflectionProperty;
@@ -274,26 +296,30 @@ abstract class SqlDao {
 
 		$sqlSetValuesAsSql = implode(', ', $sqlSetValues);
 
-		$updateQuery = "
+		$updateQuery = <<<SQL
 			UPDATE `$table`
 			SET $sqlSetValuesAsSql
 			WHERE `$primaryAttributeSqlName` = $primaryQuotedValue
-		";
+			SQL;
 
 		$this->getPdo()->exec($updateQuery);
 	}
 
+	/**
+	 * @param T $item
+	 * @return void
+	 */
 	public function insertItem(mixed $item): void {
 		$table = $this->getTable();
 
-		$sqlFields = array();
-		$sqlValues = array();
+		$sqlFields = [];
+		$sqlValues = [];
 		$primaryReflectionProperty = null;
 		foreach ($this->getReflectionProperties() as $reflectionProperty) {
 			$attributeName = $reflectionProperty->getName();
 			$attributeSqlName = static::getSqlColFromField($attributeName);
 			$sqlFields[] = "`$attributeSqlName`";
-			$sqlValues[] =  $this->getQuotedValueOfReflectionProperty($item, $reflectionProperty);
+			$sqlValues[] = $this->getQuotedValueOfReflectionProperty($item, $reflectionProperty);
 
 			if ($this->isReflectionPropertyPrimary($reflectionProperty)) {
 				$primaryReflectionProperty = $reflectionProperty;
@@ -303,10 +329,10 @@ abstract class SqlDao {
 		$sqlFieldsAsSql = implode(', ', $sqlFields);
 		$sqlValuesAsSql = implode(', ', $sqlValues);
 
-		$updateQuery = "
+		$updateQuery = <<<SQL
 			INSERT INTO `$table` ($sqlFieldsAsSql)
 			VALUES ($sqlValuesAsSql)
-		";
+			SQL;
 
 		try {
 			$this->getPdo()->beginTransaction();
@@ -325,27 +351,32 @@ abstract class SqlDao {
 		}
 	}
 
+	/**
+	 * @param T $element
+	 * @param ReflectionProperty $reflectionProperty
+	 * @return string
+	 */
 	private function getQuotedValueOfReflectionProperty(
 			mixed $element,
-			ReflectionProperty $reflectionProperty
+			ReflectionProperty $reflectionProperty,
 	): string {
 		$attributeName = $reflectionProperty->getName();
 		$rawValue = $element->$attributeName;
 		if ($rawValue === null) {
-			$quotedValue = 'NULL';
-		} else if ($rawValue instanceof BackedEnum) {
-			// Generated Enums are BackedEnum with value as string = sql value
-			$quotedValue = $this->getPdo()->quote($rawValue->value);
+			return 'NULL';
+		}
+		if ($rawValue instanceof UnitEnum) {
+			$value = $rawValue->name;
 		} else {
 			$value = match ($reflectionProperty->getType()?->getName()) {
 				'bool' => $rawValue ? '1' : '0',
 				'float', 'int', 'string' => $rawValue,
 				'DateTime' => date('Y-m-d H:i:s', $rawValue->getTimestamp()),
 			};
-			$quotedValue = $this->getPdo()->quote($value);
 		}
 
-		return $quotedValue;
+		$quotedValue = $this->getPdo()->quote($value);
+		return $quotedValue !== false ? $quotedValue : "`$value`";
 	}
 
 	private function isReflectionPropertyPrimary(ReflectionProperty $reflectionProperty): bool {
@@ -361,31 +392,35 @@ abstract class SqlDao {
 		return false;
 	}
 
+	/**
+	 * @param T[] $elements
+	 * @return void
+	 */
 	public function saveElements(array $elements): void {
 		$table = $this->getTable();
 
 		$reflectionProperties = $this->getReflectionProperties();
 
-		$sqlFields = array();
+		$sqlFields = [];
 		foreach ($reflectionProperties as $reflectionProperty) {
 			$attributeName = $reflectionProperty->getName();
 			$attributeSqlName = static::getSqlColFromField($attributeName);
 			$sqlFields[] = "`$attributeSqlName`";
 		}
 
-		$sqlValuesGroups = array();
-		$sqlUpdatesGroups = array();
+		$sqlValuesGroups = [];
+		$sqlUpdatesGroups = [];
 		$iterationCount = 500;
 		$iterations = (int) floor(count($elements) / $iterationCount) + 1;
 		for ($i = 0; $i < $iterations; $i++) {
 			$partialElements = array_slice(
 					$elements,
 					$i * $iterationCount,
-					$iterationCount
+					$iterationCount,
 			);
 			foreach ($partialElements as $element) {
-				$sqlValues = array();
-				$sqlUpdates = array();
+				$sqlValues = [];
+				$sqlUpdates = [];
 				foreach ($reflectionProperties as $reflectionProperty) {
 					$attributeName = $reflectionProperty->getName();
 					$attributeSqlName = static::getSqlColFromField($attributeName);
@@ -401,11 +436,11 @@ abstract class SqlDao {
 				$sqlUpdatesGroups[] = $sqlUpdates;
 			}
 
-			$allSqlValues = array();
+			$allSqlValues = [];
 			foreach ($sqlValuesGroups as $sqlValues) {
 				$allSqlValues[] = "(" . implode(', ', $sqlValues) . ")";
 			}
-			$allSqlUpdates = array();
+			$allSqlUpdates = [];
 			foreach ($sqlUpdatesGroups as $sqlUpdates) {
 				$allSqlUpdates[] = implode(', ', $sqlUpdates);
 			}
@@ -414,11 +449,11 @@ abstract class SqlDao {
 			$sqlValuesAsSql = implode(', ', $allSqlValues);
 			$sqlUpdatesAsSql = implode(', ', $allSqlUpdates);
 
-			$saveQuery = "
+			$saveQuery = <<<SQL
 				INSERT INTO `$table` ($sqlFieldsAsSql)
 				VALUES $sqlValuesAsSql
 				ON DUPLICATE KEY UPDATE $sqlUpdatesAsSql
-			";
+				SQL;
 
 			$this->getPdo()->exec($saveQuery);
 		}

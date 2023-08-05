@@ -3,25 +3,28 @@
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
 use SqlToCodeGenerator\codeGeneration\builder\FieldBuilder;
 use SqlToCodeGenerator\codeGeneration\enums\Visibility;
 
 class FieldBuilderPhpTest extends TestCase {
 
-	/**
-	 * @depends testBadFieldNameEmpty
-	 * @depends testBadFieldNameBadPhpVar
-	 * @depends testBadPhpTypeClass
-	 * @depends testBadPhpTypeDollar
-	 * @depends testBadPhpType123
-	 */
+	#[Depends('testBadFieldNameEmpty')]
+	#[Depends('testBadFieldNameBadPhpVar')]
+	#[Depends('testBadPhpTypeClass')]
+	#[Depends('testBadPhpTypeDollar')]
+	#[Depends('testBadPhpType123')]
 	public function testFieldNameAndPhpType(): void {
-		$fielBuilder = FieldBuilder::create('test')->setPhpType('hello');
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
+		);
 
 		$this->assertSame(
-				$fielBuilder->getVisibility()->value . ' hello $test;',
-				$fielBuilder->getPhpFileContent('')
+				Visibility::PUBLIC->value . ' hello $test;',
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 
@@ -50,121 +53,112 @@ class FieldBuilderPhpTest extends TestCase {
 		FieldBuilder::create('test')->setPhpType('123');
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 */
+	#[Depends('testFieldNameAndPhpType')]
 	public function testPrependLinesBy(): void {
-		$fielBuilder = FieldBuilder::create('test')->setPhpType('hello');
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
+		);
 
-		$expected = "\t" . $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
 		$this->assertSame(
-				$expected,
-				$fielBuilder->getPhpFileContent("\t")
+				"\tpublic hello \$test;",
+				$fieldBuilder->getPhpFileContent("\t"),
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 */
+	#[Depends('testFieldNameAndPhpType')]
 	public function testVisibility(): void {
-		$fielBuilder = FieldBuilder::create('test')->setPhpType('hello');
+		foreach (Visibility::cases() as $visibility) {
+			$fieldBuilder = FieldBuilder::create(
+					fieldName: 'test',
+					phpType: 'hello',
+					visibility: $visibility,
+			);
 
-		$expectedPublic = 'public'
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
-		$fielBuilder->setVisibility(Visibility::PUBLIC);
-		$this->assertSame(
-				$expectedPublic,
-				$fielBuilder->getPhpFileContent('')
+			$this->assertSame(
+					$visibility->value . ' hello $test;',
+					$fieldBuilder->getPhpFileContent(''),
+			);
+		}
+	}
+
+	#[Depends('testFieldNameAndPhpType')]
+	public function testVisibilityDefault(): void {
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
 		);
 
-		$expectedProtected = 'protected'
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
-		$fielBuilder->setVisibility(Visibility::PROTECTED);
 		$this->assertSame(
-				$expectedProtected,
-				$fielBuilder->getPhpFileContent('')
-		);
-
-		$expectedPrivate = 'private'
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
-		$fielBuilder->setVisibility(Visibility::PRIVATE);
-		$this->assertSame(
-				$expectedPrivate,
-				$fielBuilder->getPhpFileContent('')
+				'public hello $test;',
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 */
+	#[Depends('testFieldNameAndPhpType')]
 	public function testDefaultValue(): void {
-		$fielBuilder = FieldBuilder::create('test')
-				->setPhpType('hello')
-				->setDefaultValue('hello');
-
-		$fielBuilder->setDefaultValue('hello');
-		$expectedWithValue = $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ' = hello;';
-		$this->assertSame(
-				$expectedWithValue,
-				$fielBuilder->getPhpFileContent('')
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
+				defaultValue: 'hello',
 		);
 
-		$fielBuilder->setDefaultValue('');
-		$expectedWithoutValue = $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
 		$this->assertSame(
-				$expectedWithoutValue,
-				$fielBuilder->getPhpFileContent('')
+				'public hello $test = hello;',
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 * @depends testBadIsNullable
-	 */
-	public function testIsNullable(): void {
-		$fielBuilder = FieldBuilder::create('test')
-				->setPhpType('hello')
-				->setIsNullable(true);
+	#[Depends('testFieldNameAndPhpType')]
+	public function testDefaultValueEmpty(): void {
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
+				defaultValue: '',
+		);
 
-		$expected = $fielBuilder->getVisibility()->value
-				. ' hello|null $' . $fielBuilder->getFieldName() . ';';
 		$this->assertSame(
-				$expected,
-				$fielBuilder->getPhpFileContent('')
+				'public hello $test;',
+				$fieldBuilder->getPhpFileContent(''),
+		);
+	}
+
+	#[Depends('testFieldNameAndPhpType')]
+	#[Depends('testBadIsNullable')]
+	public function testIsNullable(): void {
+		$fieldBuilder = FieldBuilder::create(
+				fieldName: 'test',
+				phpType: 'hello',
+				isNullable: true,
+		);
+
+		$this->assertSame(
+				'public hello|null $test;',
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 
 	public function testBadIsNullable(): void {
 		$this->expectException(LogicException::class);
-		FieldBuilder::create('test')
-				->setIsNullable(true)
-				->getPhpFileContent('');
+		FieldBuilder::create(
+				fieldName: 'test',
+				isNullable: true,
+		)->getPhpFileContent('');
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 * @depends testIsConstNullable
-	 * @depends testIsConstNoDefaultValue
-	 */
+	#[Depends('testFieldNameAndPhpType')]
+	#[Depends('testIsConstNullable')]
+	#[Depends('testIsConstNoDefaultValue')]
 	public function testIsConst(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setIsConst(true)
 				->setDefaultValue('hello');
 
-		$expected = 'final ' . $fielBuilder->getVisibility()->value
-				. ' const ' . $fielBuilder->getFieldName() . ' = hello;';
+		$expected = 'final ' . 'public'
+				. ' const test = hello;';
 		$this->assertSame(
 				$expected,
-				$fielBuilder->getPhpFileContent('')
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 
@@ -184,54 +178,66 @@ class FieldBuilderPhpTest extends TestCase {
 				->getPhpFileContent('');
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 */
+	#[Depends('testFieldNameAndPhpType')]
 	public function testCustomTypeHint(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setPhpType('hello')
 				->setCustomTypeHint('hi');
 
-		$fileContentLines = explode("\n", $fielBuilder->getPhpFileContent(''));
+		$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent(''));
 		$this->assertCount(2, $fileContentLines);
 		$this->assertSame(
 				'/** @type hi */',
-				$fileContentLines[0]
+				$fileContentLines[0],
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndPhpType
-	 */
+	#[Depends('testFieldNameAndPhpType')]
+	public function testClassFieldEnum(): void {
+		foreach (ClassFieldEnum::cases() as $classFieldEnum) {
+			$fieldBuilder = FieldBuilder::create('test')
+					->setPhpType('hello')
+					->setClassFieldEnum($classFieldEnum);
+
+			$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent(''));
+			$this->assertCount(2, $fileContentLines);
+			$this->assertSame(
+					'#[ClassField(ClassFieldEnum::' . $classFieldEnum->name . ')]',
+					$fileContentLines[0],
+			);
+		}
+	}
+
+	#[Depends('testFieldNameAndPhpType')]
 	public function testComments(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setPhpType('hello');
 
-		$fielBuilder->addComments('one comment');
-		$expectedOneComment = $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . '; // one comment';
+		$fieldBuilder->addComments('one comment');
+		$expectedOneComment = 'public'
+				. ' hello'
+				. ' $test; // one comment';
 		$this->assertSame(
 				$expectedOneComment,
-				$fielBuilder->getPhpFileContent('')
+				$fieldBuilder->getPhpFileContent(''),
 		);
 
-		$fielBuilder->addComments('2nd comment');
-		$expectedTwoComments = $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . '; // one comment. 2nd comment';
+		$fieldBuilder->addComments('2nd comment');
+		$expectedTwoComments = 'public'
+				. ' hello'
+				. ' $test; // one comment. 2nd comment';
 		$this->assertSame(
 				$expectedTwoComments,
-				$fielBuilder->getPhpFileContent('')
+				$fieldBuilder->getPhpFileContent(''),
 		);
 
-		$fielBuilder->setComments([]);
-		$expectedNoComments = $fielBuilder->getVisibility()->value
-				. ' ' . $fielBuilder->getPhpType()
-				. ' $' . $fielBuilder->getFieldName() . ';';
+		$fieldBuilder->setComments([]);
+		$expectedNoComments = 'public'
+				. ' hello'
+				. ' $test;';
 		$this->assertSame(
 				$expectedNoComments,
-				$fielBuilder->getPhpFileContent('')
+				$fieldBuilder->getPhpFileContent(''),
 		);
 	}
 

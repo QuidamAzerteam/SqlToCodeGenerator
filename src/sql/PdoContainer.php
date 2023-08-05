@@ -6,8 +6,10 @@ use DateTime;
 use PDO;
 
 /**
- * Using the getPdo method will allow reconnexion if `wait_timeout` requires it
+ * Using the getPdo method will allow reconnection if `wait_timeout` requires it
  * @link https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_wait_timeout
+ *
+ * This class is not tested nor covered because it requires a PDO connection
  */
 class PdoContainer {
 
@@ -20,7 +22,7 @@ class PdoContainer {
 			private readonly string $host,
 			private readonly string $port,
 			private readonly string $user,
-			private readonly string $password
+			private readonly string $password,
 	) {}
 
 	public function getPdo(): PDO {
@@ -29,12 +31,12 @@ class PdoContainer {
 				|| !isset($this->lastPdoConnexionDateTime)
 				|| $this->lastPdoConnexionDateTime->diff(new DateTime())->s > $this->waitTimeout
 		) {
-			$dsnAsArray = array(
+			$dsnAsArray = [
 				'dbname' => $this->dbName,
 				'host' => $this->host,
 				'port' => $this->port,
 				'charset' => 'utf8',
-			);
+			];
 			$dsn = implode(';', array_map(static function (string $key, string $value) {
 				return $key . '=' . $value;
 			}, array_keys($dsnAsArray), $dsnAsArray));
@@ -43,9 +45,9 @@ class PdoContainer {
 					'mysql:' . $dsn,
 					$this->user,
 					$this->password,
-					array(
+					[
 						PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-					),
+					],
 			);
 			$result = $this->pdo->query("SHOW VARIABLES LIKE 'wait_timeout'")->fetchAll(PDO::FETCH_ASSOC);
 			$this->waitTimeout = (int) $result[0]['Value'];

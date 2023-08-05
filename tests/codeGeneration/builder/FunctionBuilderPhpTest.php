@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\bean\Line;
 use SqlToCodeGenerator\codeGeneration\builder\FunctionBuilder;
@@ -15,61 +16,60 @@ class FunctionBuilderPhpTest extends TestCase {
 				returnType: 'returnType',
 		);
 
-		$expected = "public function name(): returnType {\n}";
+		$expected = <<<PHP
+			public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIndent(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
 		);
 
-		$expectedOneIndent = "\tpublic function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {\n\t}";
+		$expectedOneIndent = <<<PHP
+				public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expectedOneIndent,
-				$functionBuilder->getPhpFileContent("\t")
+				$functionBuilder->getPhpFileContent("\t"),
 		);
 
-		$expectedTwoIndents = "\t\tpublic function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {\n\t\t}";
+		$expectedTwoIndents = <<<PHP
+					public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expectedTwoIndents,
-				$functionBuilder->getPhpFileContent("\t\t")
+				$functionBuilder->getPhpFileContent("\t\t"),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testDocumentationLines(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
-				documentationLines: array(
-					'test',
-				),
+				documentationLines: ['test'],
 		);
 
-		$expected = "/**
- * test
- */
-public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
+		$expected = <<<PHP
+			/**
+			 * test
+			 */
+			public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIsFinal(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
@@ -77,17 +77,16 @@ public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnTyp
 				isFinal: true,
 		);
 
-		$expected = "final public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
+		$expected = <<<PHP
+			final public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIsStatic(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
@@ -95,17 +94,16 @@ public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnTyp
 				isStatic: true,
 		);
 
-		$expected = "public static function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
+		$expected = <<<PHP
+			public static function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testIsStaticAndIsFinal(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
@@ -114,72 +112,102 @@ public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnTyp
 				isFinal: true,
 		);
 
-		$expected = "final public static function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
+		$expected = <<<PHP
+			final public static function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
+	public function testVisibilityDefault(): void {
+		$functionBuilder = FunctionBuilder::create(
+				name: 'name',
+				returnType: 'returnType',
+		);
+
+		$expected = <<<PHP
+			public function name(): returnType {}
+			PHP;
+		$this->assertSame(
+				$expected,
+				$functionBuilder->getPhpFileContent(''),
+		);
+	}
+
+	#[Depends('testMinimal')]
+	public function testVisibilityPrivate(): void {
+		$functionBuilder = FunctionBuilder::create(
+				name: 'name',
+				returnType: 'returnType',
+				visibility: Visibility::PRIVATE,
+		);
+
+		$expectedPrivate = <<<PHP
+			private function name(): returnType {}
+			PHP;
+		$this->assertSame(
+				$expectedPrivate,
+				$functionBuilder->getPhpFileContent(''),
+		);
+	}
+
+	#[Depends('testMinimal')]
+	public function testVisibilityProtected(): void {
+		$functionBuilder = FunctionBuilder::create(
+				name: 'name',
+				returnType: 'returnType',
+				visibility: Visibility::PROTECTED,
+		);
+
+		$expectedProtected = <<<PHP
+			protected function name(): returnType {}
+			PHP;
+		$this->assertSame(
+				$expectedProtected,
+				$functionBuilder->getPhpFileContent(''),
+		);
+	}
+
+	#[Depends('testMinimal')]
 	public function testVisibility(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
+				visibility: Visibility::PUBLIC,
 		);
 
-		$expectedDefault = "public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
+		$expectedDefault = <<<PHP
+			public function name(): returnType {}
+			PHP;
 		$this->assertSame(
 				$expectedDefault,
-				$functionBuilder->getPhpFileContent('')
-		);
-
-		$expectedPrivate = "private function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
-		$this->assertSame(
-				$expectedPrivate,
-				$functionBuilder->setVisibility(Visibility::PRIVATE)->getPhpFileContent('')
-		);
-
-		$expectedProtected = "protected function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
-		$this->assertSame(
-				$expectedProtected,
-				$functionBuilder->setVisibility(Visibility::PROTECTED)->getPhpFileContent('')
-		);
-
-		$expectedPublic = "public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-}";
-		$this->assertSame(
-				$expectedPublic,
-				$functionBuilder->setVisibility(Visibility::PUBLIC)->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 
-	/**
-	 * @depends testMinimal
-	 */
+	#[Depends('testMinimal')]
 	public function testLines(): void {
 		$functionBuilder = FunctionBuilder::create(
 				name: 'name',
 				returnType: 'returnType',
-				lines: array(
+				lines: [
 					Line::create('test'),
 					Line::create('test2', 1),
-				),
+				],
 		);
 
-		$expected = "public function {$functionBuilder->getName()}(): {$functionBuilder->getReturnType()} {
-	test
-		test2
-}";
+		$expected = <<<PHP
+			public function name(): returnType {
+				test
+					test2
+			}
+			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent('')
+				$functionBuilder->getPhpFileContent(''),
 		);
 	}
 

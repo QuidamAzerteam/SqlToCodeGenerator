@@ -3,11 +3,10 @@
 namespace SqlToCodeGenerator\utils;
 
 use InvalidArgumentException;
+use LogicException;
 use RuntimeException;
 
-abstract class FileUtils {
-
-	private final function __construct() {}
+final class FileUtils {
 
 	public static function recursiveDelete($dirPath): void {
 		if (!file_exists($dirPath)) {
@@ -31,6 +30,9 @@ abstract class FileUtils {
 	}
 
 	public static function createDir(string $dirPath): void {
+		if (file_exists($dirPath) && !is_dir($dirPath)) {
+			throw new LogicException(sprintf('File "%s" exists and is not a directory', $dirPath));
+		}
 		if (!mkdir($dirPath) && !is_dir($dirPath)) {
 			throw new RuntimeException(sprintf('Directory "%s" was not created', $dirPath));
 		}

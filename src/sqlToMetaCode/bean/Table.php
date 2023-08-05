@@ -32,4 +32,8 @@ class Table {
 			public readonly ?string $temporary,
 	) {}
 
+	public function getUniqueIdentifier(): string {
+		return implode('_', [$this->tableSchema, $this->tableName]);
+	}
+
 }

@@ -2,26 +2,25 @@
 
 namespace SqlToCodeGenerator\codeGeneration\builder;
 
+use SqlToCodeGenerator\codeGeneration\utils\CheckUtils;
+
 class ClassBuilder extends FileBuilder {
 
-	/** @var FieldBuilder[] */
-	private array $fieldBuilders;
-
 	/**
-	 * @param FieldBuilder[] $fieldBuilders
-	 * @see parent::__construct
+	 * Use {@see create} instead
+	 * @see create
 	 */
-	public function __construct(
+	protected function __construct(
 			string $basePackage,
 			string $namespace,
 			string $name,
-			array $imports = array(),
+			array $imports = [],
 			?string $extends = null,
 			?string $implements = null,
-			array $phpFunctionBuilders = array(),
-			array $jsFunctionBuilders = array(),
-			array $docLines = array(),
-			array $fieldBuilders = array()
+			array $phpFunctionBuilders = [],
+			array $jsFunctionBuilders = [],
+			array $docLines = [],
+			private array $fieldBuilders = [],
 	) {
 		parent::__construct(
 				basePackage: $basePackage,
@@ -34,23 +33,26 @@ class ClassBuilder extends FileBuilder {
 				jsFunctionBuilders: $jsFunctionBuilders,
 				docLines: $docLines,
 		);
-		$this->fieldBuilders = $fieldBuilders;
+		foreach ($this->fieldBuilders as $fieldBuilder) {
+			CheckUtils::checkIfValueIsAClass($fieldBuilder, FieldBuilder::class);
+		}
 	}
 
 	/**
-	 * @see __construct
+	 * @param FieldBuilder[] $fieldBuilders
+	 * @see parent::create
 	 */
 	public static function create(
 			string $basePackage,
 			string $namespace,
 			string $name,
-			array $imports = array(),
+			array $imports = [],
 			?string $extends = null,
 			?string $implements = null,
-			array $phpFunctionBuilders = array(),
-			array $jsFunctionBuilders = array(),
-			array $docLines = array(),
-			array $fieldBuilders = array()
+			array $phpFunctionBuilders = [],
+			array $jsFunctionBuilders = [],
+			array $docLines = [],
+			array $fieldBuilders = [],
 	): static {
 		return new static(
 				basePackage: $basePackage,
@@ -66,21 +68,6 @@ class ClassBuilder extends FileBuilder {
 		);
 	}
 
-	/**
-	 * @return FieldBuilder[]
-	 */
-	public function getFieldBuilders(): array {
-		return $this->fieldBuilders;
-	}
-
-	/**
-	 * @param FieldBuilder[] $fieldBuilders
-	 */
-	public function setFieldBuilders(array $fieldBuilders): static {
-		$this->fieldBuilders = $fieldBuilders;
-		return $this;
-	}
-
 	public function addFieldBuilders(FieldBuilder ...$fieldBuilders): static {
 		array_push($this->fieldBuilders, ...$fieldBuilders);
 		return $this;
@@ -91,27 +78,21 @@ class ClassBuilder extends FileBuilder {
 	}
 
 	public function getFieldsPhpFileContent(): string {
-		$fileContent = '';
-		if ($this->fieldBuilders) {
-			foreach ($this->fieldBuilders as $fieldBuilder) {
-				$fileContent .= $fieldBuilder->getPhpFileContent("\t") . "\n";
-			}
-			$fileContent .= "\n";
-		}
-
-		return $fileContent;
+		return $this->fieldBuilders
+				? implode("\n", array_map(
+						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent("\t"),
+						$this->fieldBuilders,
+				)) . "\n"
+				: '';
 	}
 
 	public function getFieldsJsFileContent(): string {
-		$fileContent = '';
-		if ($this->fieldBuilders) {
-			foreach ($this->fieldBuilders as $fieldBuilder) {
-				$fileContent .= $fieldBuilder->getJsFileContent('	') . "\n";
-			}
-			$fileContent .= "\n";
-		}
-
-		return $fileContent;
+		return $this->fieldBuilders
+				? implode("\n", array_map(
+						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getJsFileContent("\t"),
+						$this->fieldBuilders,
+				))
+				: '';
 	}
 
 }

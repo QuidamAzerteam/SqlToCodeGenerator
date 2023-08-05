@@ -15,7 +15,7 @@ abstract class SqlUtils {
 			string $host,
 			string $port,
 			string $user,
-			string $password
+			string $password,
 	): void {
 		self::$pdoContainer = new PdoContainer($dbName, $host, $port, $user, $password);
 	}

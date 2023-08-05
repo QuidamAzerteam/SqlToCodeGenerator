@@ -3,24 +3,24 @@
 namespace SqlToCodeGenerator\test\codeGeneration\builder;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\TestCase;
 use SqlToCodeGenerator\codeGeneration\builder\FieldBuilder;
-use SqlToCodeGenerator\codeGeneration\enums\Visibility;
 
 class FieldBuilderJsTest extends TestCase {
 
 	public function testFieldNameAndJsType(): void {
-		$fielBuilder = FieldBuilder::create('test')->setJsType('hello');
+		$fieldBuilder = FieldBuilder::create('test')->setJsType('hello');
 
-		$fileContentLines = explode("\n", $fielBuilder->getJsFileContent(''));
+		$fileContentLines = explode("\n", $fieldBuilder->getJsFileContent(''));
 		$this->assertCount(2, $fileContentLines);
 		$this->assertSame(
 				'/** @type {hello} */',
-				$fileContentLines[0]
+				$fileContentLines[0],
 		);
 		$this->assertSame(
 				'test',
-				$fileContentLines[1]
+				$fileContentLines[1],
 		);
 	}
 
@@ -34,123 +34,111 @@ class FieldBuilderJsTest extends TestCase {
 		FieldBuilder::create('test')->setJsType('')->getJsFileContent('');
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 */
+	#[Depends('testFieldNameAndJsType')]
 	public function testPrependLinesBy(): void {
-		$fielBuilder = FieldBuilder::create('test')->setJsType('hello');
+		$fieldBuilder = FieldBuilder::create('test')->setJsType('hello');
 
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent("\t"))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent("\t"))[1];
 		$this->assertSame(
 				"	test",
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 */
+	#[Depends('testFieldNameAndJsType')]
 	public function testDefaultValue(): void {
-		$fielBuilder = FieldBuilder::create('test')->setJsType('hello');
+		$fieldBuilder = FieldBuilder::create('test')->setJsType('hello');
 
-		$fielBuilder->setDefaultValue('hello');
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[1];
+		$fieldBuilder->setDefaultValue('hello');
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
 		$this->assertSame(
 				'test = hello',
-				$fileContentLine
+				$fileContentLine,
 		);
 
-		$fielBuilder->setDefaultValue('');
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[1];
+		$fieldBuilder->setDefaultValue('');
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
 		$this->assertSame(
 				'test',
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 */
+	#[Depends('testFieldNameAndJsType')]
 	public function testIsNullable(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setJsType('hello')
 				->setIsNullable(true);
 
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[0];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
 		$this->assertSame(
 				'/** @type {hello|null} */',
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 */
+	#[Depends('testFieldNameAndJsType')]
 	public function testCustomTypeHint(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setJsType('hello')
 				->setCustomTypeHint('hi');
 
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[0];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
 		$this->assertNotSame(
 				'/** @type {hello} */',
-				$fileContentLine
+				$fileContentLine,
 		);
 		$this->assertSame(
 				'/** @type {hi} */',
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 * @depends testCustomTypeHint
-	 * @depends testIsNullable
-	 */
+	#[Depends('testFieldNameAndJsType')]
+	#[Depends('testCustomTypeHint')]
+	#[Depends('testIsNullable')]
 	public function testCustomTypeHintWithIsNullable(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setJsType('hello')
 				->setCustomTypeHint('hi')
 				->setIsNullable(true);
 
-		$fielBuilder->setIsNullable(true);
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[0];
+		$fieldBuilder->setIsNullable(true);
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
 		$this->assertNotSame(
 				'/** @type {hello|null} */',
-				$fileContentLine
+				$fileContentLine,
 		);
 		$this->assertSame(
 				'/** @type {hi|null} */',
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 
-	/**
-	 * @depends testFieldNameAndJsType
-	 */
+	#[Depends('testFieldNameAndJsType')]
 	public function testComments(): void {
-		$fielBuilder = FieldBuilder::create('test')
+		$fieldBuilder = FieldBuilder::create('test')
 				->setJsType('hello');
 
-		$fielBuilder->addComments('one comment');
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[1];
+		$fieldBuilder->addComments('one comment');
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
 		$this->assertSame(
 				'test // one comment',
-				$fileContentLine
+				$fileContentLine,
 		);
 
-		$fielBuilder->addComments('2nd comment');
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[1];
+		$fieldBuilder->addComments('2nd comment');
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
 		$this->assertSame(
 				'test // one comment. 2nd comment',
-				$fileContentLine
+				$fileContentLine,
 		);
 
-		$fielBuilder->setComments([]);
-		$fileContentLine = explode("\n", $fielBuilder->getJsFileContent(''))[1];
+		$fieldBuilder->setComments([]);
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
 		$this->assertSame(
 				'test',
-				$fileContentLine
+				$fileContentLine,
 		);
 	}
 

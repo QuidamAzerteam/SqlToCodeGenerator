@@ -14,11 +14,15 @@ class Enum {
 	public string $namespace;
 	public string $name;
 	/** @var string[] */
-	public array $values = array();
+	public array $values = [];
 	public string|null $sqlComment = null;
 
+	public function getFullNamespace(): string {
+		return "\\$this->basePackage\\$this->namespace";
+	}
+
 	public function getFullName(): string {
-		return "\\$this->basePackage\\$this->namespace\\$this->name";
+		return "{$this->getFullNamespace()}\\$this->name";
 	}
 
 	private function getBaseEnumBuilder(): EnumBuilder {
@@ -43,9 +47,9 @@ class Enum {
 				name: 'getShortText',
 				returnType: 'string',
 				isFinal: true,
-				lines: array(
+				lines: [
 					Line::create("return match(\$this) {"),
-				),
+				],
 		);
 		$enumBuilder->addPhpFunctionBuilders($phpFunctionBuilder);
 
@@ -53,15 +57,16 @@ class Enum {
 			$valueAsShortText = ucwords(
 					implode(
 							' ',
-							explode('_', strtolower($value))
-					)
+							explode('_', strtolower($value)),
+					),
 			);
 			$phpFunctionBuilder->addLines(Line::create(
 					"self::$value => '$valueAsShortText',",
-					$valueIndex === 0 ? 1 : 0 // Only first line get increment
+					// Only first line get increment
+					$valueIndex === 0 ? 1 : 0,
 			));
 		}
-		$phpFunctionBuilder->addLines(Line::create("};",-1));
+		$phpFunctionBuilder->addLines(Line::create("};", -1));
 
 		return $enumBuilder->getPhpFileContent();
 	}
@@ -74,29 +79,29 @@ class Enum {
 		$classBuilder = ClassBuilder::create(
 				basePackage: $this->basePackage,
 				namespace: "$testNamespacePart\\$this->namespace",
-				name: "{$this->name}Test",
+				name: ucfirst($this->name) . 'Test',
 				extends: 'TestCase',
-				imports: array(
+				imports: [
 					TestCase::class,
 					"$this->basePackage\\$this->namespace\\$this->name",
-				),
+				],
 		);
 
 		foreach ($this->values as $value) {
 			$valueAsShortText = implode(
 					'',
 					array_map(
-							static fn (string $word) => ucwords($word),
-							explode('_', strtolower($value))
-					)
+							static fn(string $word) => ucwords($word),
+							explode('_', strtolower($value)),
+					),
 			);
 
 			$phpFunctionBuilder = FunctionBuilder::create(
 					name: "test$valueAsShortText",
 					returnType: 'void',
-					lines: array(
+					lines: [
 						Line::create("\$this->assertNotNull($this->name::$value);"),
-					),
+					],
 			);
 			$classBuilder->addPhpFunctionBuilders($phpFunctionBuilder);
 		}
