@@ -77,7 +77,7 @@ final class SqlToMetaCodeUtils {
 					break;
 				case BeanPropertyType::DATE:
 					// This default value as new DateTime is not handled by PHP for now
-					if ($defaultValue !== null && $defaultValue !== 'current_timestamp()') {
+					if ($defaultValue !== null && !str_starts_with($defaultValue, 'current_timestamp(')) {
 						$property->defaultValueAsString = $defaultValue;
 					}
 					break;
