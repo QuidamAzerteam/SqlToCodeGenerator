@@ -62,10 +62,12 @@ class Enum {
 						type: 'string',
 				)],
 				lines: [
-					Line::create("return array_filter("),
-					Line::create("$this->name::cases(),", 2),
-					Line::create("static fn($this->name \$case): bool => strcasecmp(\$case->name, \$value) === 0,"),
-					Line::create(")[0] ?? null;", -2),
+					Line::create("foreach($this->name::cases() as \$case) {"),
+					Line::create("if (strcasecmp(\$case->name, \$value) === 0) {", 1),
+					Line::create("return \$case;", 1),
+					Line::create("}", -1),
+					Line::create("}", -1),
+					Line::create("return null;"),
 				],
 		);
 		$enumBuilder->addPhpFunctionBuilders($tryFromFunction);
