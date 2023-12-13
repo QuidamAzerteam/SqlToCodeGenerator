@@ -15,7 +15,6 @@ class PdoContainer {
 
 	private PDO $pdo;
 	private DateTime $lastPdoConnexionDateTime;
-	private int $waitTimeout;
 
 	public function __construct(
 			private readonly string $dbName,
@@ -23,6 +22,7 @@ class PdoContainer {
 			private readonly string $port,
 			private readonly string $user,
 			private readonly string $password,
+			private readonly int $waitTimeout,
 	) {}
 
 	public function getPdo(): PDO {
@@ -49,8 +49,7 @@ class PdoContainer {
 						PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 					],
 			);
-			$result = $this->pdo->query("SHOW VARIABLES LIKE 'wait_timeout'")->fetchAll(PDO::FETCH_ASSOC);
-			$this->waitTimeout = (int) $result[0]['Value'];
+			$this->pdo->exec("SET session wait_timeout=$this->waitTimeout;");
 			$this->lastPdoConnexionDateTime = new DateTime();
 		}
 		return $this->pdo;

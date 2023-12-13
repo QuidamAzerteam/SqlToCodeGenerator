@@ -124,6 +124,7 @@ class CodeGenerator {
 			string $enumsDirName = 'enums',
 			string $daoDirName = 'dao',
 			?string $testDirName = 'tests',
+			int $waitTimeout = 60,
 	): self {
 		return new self(
 				new SqlToMetaCodeDao(
@@ -133,6 +134,7 @@ class CodeGenerator {
 								$port,
 								$user,
 								$password,
+								$waitTimeout,
 						),
 						$bdd,
 						$tablesToIgnore,
