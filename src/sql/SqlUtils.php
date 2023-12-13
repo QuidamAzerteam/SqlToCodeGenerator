@@ -16,8 +16,9 @@ abstract class SqlUtils {
 			string $port,
 			string $user,
 			string $password,
+			int $waitTimeout = 60,
 	): void {
-		self::$pdoContainer = new PdoContainer($dbName, $host, $port, $user, $password);
+		self::$pdoContainer = new PdoContainer($dbName, $host, $port, $user, $password, $waitTimeout);
 	}
 
 	public static function initFromPdoContainer(PdoContainer $pdoContainer): void {
