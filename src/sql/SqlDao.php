@@ -228,8 +228,35 @@ abstract class SqlDao {
 		$where = '(' . implode(') OR (', $allWheres) . ')';
 		$existingElements = $this->get($where);
 
+		$reflexionClass = new ReflectionClass($elements[0]::class);
+		/** @var string[] $fieldsAttributesToUpdate */
+		$fieldsAttributesToUpdate = [];
+		/** @var ReflectionProperty $property */
+		foreach ([
+			...$reflexionClass->getProperties(),
+			...$reflexionClass->getParentClass()->getProperties() ?? [],
+		] as $property) {
+			foreach ($property->getAttributes() as $attribute) {
+				foreach ($attribute->getArguments() as $argument) {
+					if (is_object($argument) && $argument::class === ClassFieldEnum::class && in_array(
+							$argument->name,
+							[ClassFieldEnum::PRIMARY->name, ClassFieldEnum::IMMUTABLE->name],
+							true,
+					)) {
+						$fieldsAttributesToUpdate[] = $property->getName();
+						break;
+					}
+				}
+			}
+		}
+
+		if (!$fieldsAttributesToUpdate) {
+			return;
+		}
 		foreach ($existingElements as $existingElement) {
-			$elementsByUniqueFieldsKey[$uniqueKeyFromElement($existingElement)]->id = $existingElement->id;
+			foreach ($fieldsAttributesToUpdate as $fieldAttribute) {
+				$elementsByUniqueFieldsKey[$uniqueKeyFromElement($existingElement)]->$fieldAttribute = $existingElement->$fieldAttribute;
+			}
 		}
 	}
 
@@ -398,6 +425,9 @@ abstract class SqlDao {
 	 * @return void
 	 */
 	public function saveElements(array $elements): void {
+		if (!$elements) {
+			return;
+		}
 		$table = $this->getTable();
 
 		$reflectionProperties = $this->getReflectionProperties();
@@ -448,13 +478,14 @@ abstract class SqlDao {
 
 			$sqlFieldsAsSql = implode(', ', $sqlFields);
 			$sqlValuesAsSql = implode(', ', $allSqlValues);
-			$sqlUpdatesAsSql = implode(', ', $allSqlUpdates);
 
 			$saveQuery = <<<SQL
 				INSERT INTO `$table` ($sqlFieldsAsSql)
 				VALUES $sqlValuesAsSql
-				ON DUPLICATE KEY UPDATE $sqlUpdatesAsSql
 				SQL;
+			if (count($allSqlUpdates) > 0) {
+				$saveQuery .= "\nON DUPLICATE KEY UPDATE " . implode(', ', $allSqlUpdates);
+			}
 
 			$this->getPdo()->exec($saveQuery);
 		}

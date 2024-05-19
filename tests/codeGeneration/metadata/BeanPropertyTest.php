@@ -173,5 +173,18 @@ class BeanPropertyTest extends TestCase {
 		);
 	}
 
+	public function testImmutableAttribute(): void {
+		$beanProperty = new BeanProperty();
+		$beanProperty->sqlName = 'test';
+		$beanProperty->isNullable = false;
+		$beanProperty->propertyType = BeanPropertyType::STRING;
+		$beanProperty->sqlComment = 'aaa ImmutableAttribute aaa';
+
+		$this->assertStringContainsString(
+				'#[ClassField(ClassFieldEnum::IMMUTABLE)]',
+				$beanProperty->getFieldBuilder()->getPhpFileContent(),
+		);
+	}
+
 
 }

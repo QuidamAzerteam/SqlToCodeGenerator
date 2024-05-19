@@ -48,7 +48,7 @@ class Bean {
 				basePackage: $this->basePackage,
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
-				docLines: ['Bean of ' . $this->sqlDatabase . '.' . $this->sqlTable],
+				docLines: ['Bean of `' . $this->sqlDatabase . '.' . $this->sqlTable . '`'],
 		);
 
 		foreach ($this->properties as $property) {
@@ -83,7 +83,8 @@ class Bean {
 					SqlDao::class,
 					"$this->basePackage\\$this->beanNamespace\\{$this->getClassName()}",
 				],
-				docLines: [$this->sqlDatabase . '.' . $this->sqlTable . ' DAO'],
+				docLines: ['`' . $this->sqlDatabase . '.' . $this->sqlTable . '` DAO of {@see '
+						. $this->getClassName() . '} bean.'],
 		);
 
 		$primaryField = null;
@@ -327,12 +328,10 @@ class Bean {
 					name: $arrayVarName,
 			));
 
-			$field = $foreignBeanField->isArray
-					? VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName())
-					: $foreignBeanField->toBean->getClassName();
-
 			$completeFunctionBuilder->addLines(
-					Line::create("\$fkIds = [];"),
+					Line::create("if (!\$$arrayVarName) {"),
+					Line::create("return;", 1),
+					Line::create("}", -1),
 					Line::create("foreach (\$$arrayVarName as \$$arrayParameterName) {"),
 					Line::create("\$fkIds[\$element->$foreignBeanWithPropertyName] = \$element->$foreignBeanWithPropertyName;", 1),
 					Line::create("}", -1),
@@ -351,20 +350,15 @@ class Bean {
 			if ($foreignBeanField->isArray) {
 				$completeFunctionBuilder->addLines(
 						Line::create(
-								"\$$arrayParameterName->" . lcfirst($field)
+								"\$$arrayParameterName->" . lcfirst($classNameInMethod)
 										. " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? [];",
 								1,
 						),
-						Line::create("foreach (\$$arrayParameterName->" . lcfirst($field) . " as \$fkElement) {"),
-						Line::create("\$$arrayParameterName->" . lcfirst($this->getClassName()) . " = \$element;", 1),
-						Line::create("}", -1),
 				);
 			} else {
 				$completeFunctionBuilder->addLines(
-						Line::create("\$$arrayParameterName->" . lcfirst($field) . " ="
+						Line::create("\$$arrayParameterName->" . lcfirst($classNameInMethod) . " ="
 								. " \$fkElementsByFkProperty[\$$arrayParameterName->$foreignBeanWithPropertyName][0] ?? null;", 1),
-						Line::create("\$$arrayParameterName->" . lcfirst($field)
-								. "->" . lcfirst($this->getClassName()) . " = \$$arrayParameterName;"),
 				);
 			}
 			$completeFunctionBuilder->addLines(Line::create("}", -1));
@@ -378,7 +372,7 @@ class Bean {
 				basePackage: $this->basePackage,
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
-				docLines: ['Bean of ' . $this->sqlDatabase . '.' . $this->sqlTable],
+				docLines: ['Bean of `' . $this->sqlDatabase . '.' . $this->sqlTable . '`'],
 		);
 
 		foreach ($this->properties as $property) {

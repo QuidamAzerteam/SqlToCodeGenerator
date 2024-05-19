@@ -2,6 +2,7 @@
 
 namespace SqlToCodeGenerator\codeGeneration\metadata;
 
+use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
 use SqlToCodeGenerator\codeGeneration\builder\FieldBuilder;
 use SqlToCodeGenerator\sql\SqlDao;
 
@@ -55,6 +56,9 @@ class BeanProperty {
 		}
 		if ($this->sqlComment) {
 			$fieldBuilder->addComments($this->sqlComment);
+			if (str_contains($this->sqlComment, 'ImmutableAttribute')) {
+				$fieldBuilder->setClassFieldEnum($this->columnKey?->toClassFieldEnum() ?? ClassFieldEnum::IMMUTABLE);
+			}
 		}
 
 		return $fieldBuilder;

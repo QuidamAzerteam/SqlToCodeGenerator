@@ -23,7 +23,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -53,7 +53,7 @@ class ClassBuilderPhpTest extends TestCase {
 			use test;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -83,7 +83,7 @@ class ClassBuilderPhpTest extends TestCase {
 			use test;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -114,7 +114,7 @@ class ClassBuilderPhpTest extends TestCase {
 			use test2;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -146,7 +146,7 @@ class ClassBuilderPhpTest extends TestCase {
 			use cTest;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -174,7 +174,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name extends coucou {
 
@@ -202,7 +202,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name implements coucou {
 
@@ -231,7 +231,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name extends coucouExtends implements coucouImplements {
 
@@ -292,7 +292,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -326,7 +326,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -366,7 +366,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			class name {
 
@@ -398,7 +398,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 * hello world
 			 */
 			class name {
@@ -427,7 +427,7 @@ class ClassBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 * hello
 			 * world
 			 */
