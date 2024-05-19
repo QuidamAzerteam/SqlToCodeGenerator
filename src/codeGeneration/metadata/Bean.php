@@ -27,7 +27,7 @@ class Bean {
 	/** @var BeanProperty[] */
 	public array $properties = [];
 	/** @var ForeignBeanField[] */
-	public array $foreignBeans = [];
+	public array $foreignBeanFields = [];
 	/** @var string[][] */
 	public array $colNamesByUniqueConstraintName = [];
 
@@ -63,9 +63,9 @@ class Bean {
 			}
 		}
 
-		if ($this->foreignBeans) {
-			foreach ($this->foreignBeans as $foreignBean) {
-				$classBuilder->addFieldBuilders($foreignBean->getAsFieldBuilderForPhp());
+		if ($this->foreignBeanFields) {
+			foreach ($this->foreignBeanFields as $foreignBeanField) {
+				$classBuilder->addFieldBuilders($foreignBeanField->getAsFieldBuilderForPhp());
 			}
 		}
 
@@ -301,13 +301,16 @@ class Bean {
 			}
 		}
 
-		foreach ($this->foreignBeans as $foreignBean) {
-			$classNameInMethod = $foreignBean->isArray
-					? VariableUtils::getPluralOfVarName($foreignBean->toBean->getClassName())
-					: $foreignBean->toBean->getClassName();
-			$foreignBeanOnPropertyName = $foreignBean->onProperty->getName();
-			$foreignBeanOnPropertySqlName = $foreignBean->onProperty->sqlName;
-			$foreignBeanWithPropertyName = $foreignBean->withProperty->getName();
+		foreach ($this->foreignBeanFields as $foreignBeanField) {
+			if ($foreignBeanField->isArray) {
+				$classNameInMethod = VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName());
+			} else {
+				// Array are reverse beans, so keep this logic in the else here
+				$classNameInMethod = ucfirst(SqlDao::sqlToCamelCase($foreignBeanField->withProperty->getSqlNameWithoutId()));
+			}
+			$foreignBeanOnPropertyName = $foreignBeanField->onProperty->getName();
+			$foreignBeanOnPropertySqlName = $foreignBeanField->onProperty->sqlName;
+			$foreignBeanWithPropertyName = $foreignBeanField->withProperty->getName();
 
 			$completeFunctionBuilder = FunctionBuilder::create(
 					name: "completeWith$classNameInMethod",
@@ -323,16 +326,16 @@ class Bean {
 					name: 'elements',
 			));
 
-			$field = $foreignBean->isArray
-					? VariableUtils::getPluralOfVarName($foreignBean->toBean->getClassName())
-					: $foreignBean->toBean->getClassName();
+			$field = $foreignBeanField->isArray
+					? VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName())
+					: $foreignBeanField->toBean->getClassName();
 
 			$completeFunctionBuilder->addLines(
 					Line::create("\$fkIds = [];"),
 					Line::create("foreach (\$elements as \$element) {"),
 					Line::create("\$fkIds[\$element->$foreignBeanWithPropertyName] = \$element->$foreignBeanWithPropertyName;", 1),
 					Line::create("}", -1),
-					Line::create("\$fkDao = new {$foreignBean->toBean->getDaoName()}();"),
+					Line::create("\$fkDao = new {$foreignBeanField->toBean->getDaoName()}();"),
 					Line::create("\$fkElements = \$fkDao->get('$foreignBeanOnPropertySqlName IN (\"' . implode('\", \"', \$fkIds) . '\")');"),
 					Line::create("\$fkElementsByFkProperty = [];"),
 					Line::create("foreach (\$fkElements as \$fkElement) {"),
@@ -343,7 +346,7 @@ class Bean {
 					Line::create("}", -1),
 					Line::create("foreach (\$elements as \$element) {"),
 			);
-			if ($foreignBean->isArray) {
+			if ($foreignBeanField->isArray) {
 				$completeFunctionBuilder->addLines(
 						Line::create(
 								"\$element->" . lcfirst($field) . " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? [];",
@@ -377,8 +380,8 @@ class Bean {
 		foreach ($this->properties as $property) {
 			$classBuilder->addFieldBuilders($property->getFieldBuilder());
 		}
-		foreach ($this->foreignBeans as $foreignBean) {
-			$classBuilder->addFieldBuilders($foreignBean->getAsFieldBuilderForJs());
+		foreach ($this->foreignBeanFields as $foreignBeanField) {
+			$classBuilder->addFieldBuilders($foreignBeanField->getAsFieldBuilderForJs());
 		}
 
 		$jsFunctionBuilder = FunctionBuilder::create(

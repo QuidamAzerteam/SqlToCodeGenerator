@@ -456,18 +456,18 @@ class SqlToMetaCodeUtilsTest extends TestCase {
 			throw new LogicException('beanA or beanB is null');
 		}
 		/** @var ForeignBeanField $foreignBean */
-		$foreignBeanAtoB = array_values($beanA->foreignBeans)[0] ?? null;
+		$foreignBeanFieldAtoB = array_values($beanA->foreignBeanFields)[0] ?? null;
 		/** @var ForeignBeanField $foreignBean */
-		$foreignBeanBToA = array_values($beanB->foreignBeans)[0] ?? null;
+		$foreignBeanFieldBToA = array_values($beanB->foreignBeanFields)[0] ?? null;
 
-		$this->assertNotNull($foreignBeanAtoB);
-		$this->assertNotNull($foreignBeanBToA);
+		$this->assertNotNull($foreignBeanFieldAtoB);
+		$this->assertNotNull($foreignBeanFieldBToA);
 
-		$this->assertSame($beanB, $foreignBeanAtoB->toBean);
-		$this->assertSame($beanA, $foreignBeanBToA->toBean);
+		$this->assertSame($beanB, $foreignBeanFieldAtoB->toBean);
+		$this->assertSame($beanA, $foreignBeanFieldBToA->toBean);
 
-		$this->assertSame($beanB->properties[0], $foreignBeanAtoB->onProperty);
-		$this->assertSame($beanA->properties[0], $foreignBeanBToA->onProperty);
+		$this->assertSame($beanB->properties[0], $foreignBeanFieldAtoB->onProperty);
+		$this->assertSame($beanA->properties[0], $foreignBeanFieldBToA->onProperty);
 	}
 
 }

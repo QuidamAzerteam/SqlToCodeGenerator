@@ -22,6 +22,10 @@ class BeanProperty {
 		return lcfirst(SqlDao::sqlToCamelCase($this->sqlName));
 	}
 
+	public function getSqlNameWithoutId(): string {
+		return preg_replace('/^id_(.+)$/', '$1', $this->sqlName);
+	}
+
 	public function getUniqueKey(): string {
 		return $this->belongsToBean->getUniqueIdentifier() . '_' . $this->sqlName;
 	}

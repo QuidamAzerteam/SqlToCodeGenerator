@@ -83,7 +83,7 @@ class BeanTest extends TestCase {
 		$foreignBeanField = $this->createMock(ForeignBeanField::class);
 		$foreignBeanField->method('getAsFieldBuilderForPhp')->willReturn($fieldBuilder);
 
-		$bean->foreignBeans[] = $foreignBeanField;
+		$bean->foreignBeanFields[] = $foreignBeanField;
 
 		$classBuilder = ClassBuilder::create(
 				basePackage: 'basePackage',
@@ -196,7 +196,7 @@ class BeanTest extends TestCase {
 		$fieldBuilder->method('getPhpFileContent')->willReturn('getPhpFileContent');
 
 		$beanProperty = $this->createMock(BeanProperty::class);
-		$beanProperty->sqlName = 'sqlName';
+		$beanProperty->sqlName = 'sql_name';
 		$beanProperty->columnKey = BeanPropertyColKey::PRI;
 		$beanProperty->method('getFieldBuilder')->willReturn($fieldBuilder);
 		$beanProperty->method('getName')->willReturn(lcfirst(SqlDao::sqlToCamelCase($beanProperty->sqlName)));
@@ -206,9 +206,9 @@ class BeanTest extends TestCase {
 		$foreignBeanField->toBean = $bean;
 		$foreignBeanField->onProperty = $beanProperty;
 		$foreignBeanField->withProperty = $beanProperty;
-		$bean->foreignBeans[] = $foreignBeanField;
+		$bean->foreignBeanFields[] = $foreignBeanField;
 
-		$classNameInMethod = $foreignBeanField->toBean->getClassName();
+		$classNameInMethod = ucfirst(SqlDao::sqlToCamelCase($foreignBeanField->withProperty->getSqlNameWithoutId()));
 		$this->assertStringContainsString(
 				"public function completeWith{$classNameInMethod}(",
 				$bean->getPhpDaoFileContent(),
@@ -255,7 +255,7 @@ class BeanTest extends TestCase {
 		$foreignBeanField = $this->createMock(ForeignBeanField::class);
 		$foreignBeanField->method('getAsFieldBuilderForJs')->willReturn($fieldBuilder);
 
-		$bean->foreignBeans[] = $foreignBeanField;
+		$bean->foreignBeanFields[] = $foreignBeanField;
 
 		$this->assertStringContainsString(
 				'getJsFileContent',
