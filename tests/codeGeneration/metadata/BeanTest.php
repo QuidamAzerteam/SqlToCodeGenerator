@@ -39,7 +39,7 @@ class BeanTest extends TestCase {
 				basePackage: 'basePackage',
 				namespace: 'beanNamespace',
 				name: $bean->getClassName(),
-				docLines: ['Bean of sqlDatabase.sqlTable'],
+				docLines: ['Bean of `sqlDatabase.sqlTable`'],
 		)->addFieldBuilders($fieldBuilder);
 
 		$this->assertSame(
@@ -89,7 +89,7 @@ class BeanTest extends TestCase {
 				basePackage: 'basePackage',
 				namespace: 'beanNamespace',
 				name: $bean->getClassName(),
-				docLines: ['Bean of sqlDatabase.sqlTable'],
+				docLines: ['Bean of `sqlDatabase.sqlTable`'],
 		)->addFieldBuilders($fieldBuilder);
 
 		$this->assertSame(

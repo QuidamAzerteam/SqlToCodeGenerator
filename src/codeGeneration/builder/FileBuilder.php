@@ -118,7 +118,7 @@ abstract class FileBuilder {
 			namespace {$this->getFullNamespace()};$importsAsString
 
 			/**
-			 * This code is generated. Do not edit it$docLinesAsString
+			 * This code is generated. Do not edit it.$docLinesAsString
 			 */
 
 			PHP;

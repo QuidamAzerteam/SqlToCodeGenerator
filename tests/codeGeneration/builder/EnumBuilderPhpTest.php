@@ -21,7 +21,7 @@ class EnumBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			enum name {
 
@@ -49,7 +49,7 @@ class EnumBuilderPhpTest extends TestCase {
 			namespace basePackage\\namespace;
 
 			/**
-			 * This code is generated. Do not edit it
+			 * This code is generated. Do not edit it.
 			 */
 			enum name {
 

@@ -133,7 +133,7 @@ class FieldBuilderPhpTest extends TestCase {
 		);
 
 		$this->assertSame(
-				'public hello|null $test;',
+				'public hello|null $test = null;',
 				$fieldBuilder->getPhpFileContent(),
 		);
 	}

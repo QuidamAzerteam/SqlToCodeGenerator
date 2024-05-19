@@ -125,7 +125,12 @@ class FieldBuilder {
 	public function getPhpFileContent(string $prependLinesBy = ''): string {
 		$fileContent = '';
 
-		$defaultAsString = $this->doesDefaultValueExists() ? ' = ' . $this->defaultValue : '';
+		$defaultAsString = '';
+		if ($this->doesDefaultValueExists()) {
+			$defaultAsString = ' = ' . $this->defaultValue;
+		} else if ($this->isNullable()) {
+			$defaultAsString = ' = null';
+		}
 		$phpTypeWithNullableString = $this->phpType;
 		if ($this->isNullable) {
 			$phpTypeWithNullableString .= '|null';
@@ -187,6 +192,8 @@ class FieldBuilder {
 		$fileContent .= $prependLinesBy . $this->fieldName;
 		if ($this->doesDefaultValueExists()) {
 			$fileContent .= " = $this->defaultValue";
+		} else if ($this->isNullable()) {
+			$fileContent .= ' = null';
 		}
 		if ($this->comments) {
 			$fileContent .= ' // ' . implode('. ', $this->comments);

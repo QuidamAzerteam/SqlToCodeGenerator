@@ -6,5 +6,6 @@ enum ClassFieldEnum {
 
 	case PRIMARY;
 	case UNIQUE;
+	case IMMUTABLE;
 
 }
