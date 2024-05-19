@@ -359,7 +359,7 @@ class Bean {
 			} else {
 				$completeFunctionBuilder->addLines(
 						Line::create("\$element->" . lcfirst($field) . " ="
-								. " \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName][0] ?? null;"),
+								. " \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName][0] ?? null;", 1),
 						Line::create("\$element->" . lcfirst($field) . "->" . lcfirst($this->getClassName()) . " = \$element;"),
 				);
 			}
