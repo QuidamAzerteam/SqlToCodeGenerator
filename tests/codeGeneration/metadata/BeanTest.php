@@ -210,14 +210,14 @@ class BeanTest extends TestCase {
 
 		$classNameInMethod = ucfirst(SqlDao::sqlToCamelCase($foreignBeanField->withProperty->getSqlNameWithoutId()));
 		$this->assertStringContainsString(
-				"public function completeWith{$classNameInMethod}(",
+				"public function completeWith$classNameInMethod(",
 				$bean->getPhpDaoFileContent(),
 		);
 
 		$foreignBeanField->isArray = true;
 		$classNameInMethod = VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName());
 		$this->assertStringContainsString(
-				"public function completeWith{$classNameInMethod}(",
+				"public function completeWith$classNameInMethod(",
 				$bean->getPhpDaoFileContent(),
 		);
 	}

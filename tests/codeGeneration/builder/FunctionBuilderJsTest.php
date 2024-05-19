@@ -24,7 +24,7 @@ class FunctionBuilderJsTest extends TestCase {
 			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent(''),
+				$functionBuilder->getJsFileContent(),
 		);
 	}
 
@@ -75,7 +75,7 @@ class FunctionBuilderJsTest extends TestCase {
 			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent(''),
+				$functionBuilder->getJsFileContent(),
 		);
 	}
 
@@ -95,7 +95,7 @@ class FunctionBuilderJsTest extends TestCase {
 			JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent(''),
+				$functionBuilder->getJsFileContent(),
 		);
 	}
 
@@ -121,7 +121,7 @@ class FunctionBuilderJsTest extends TestCase {
 		JS;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getJsFileContent(''),
+				$functionBuilder->getJsFileContent(),
 		);
 	}
 

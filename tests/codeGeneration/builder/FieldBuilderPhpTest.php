@@ -24,7 +24,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 		$this->assertSame(
 				Visibility::PUBLIC->value . ' hello $test;',
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -77,7 +77,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 			$this->assertSame(
 					$visibility->value . ' hello $test;',
-					$fieldBuilder->getPhpFileContent(''),
+					$fieldBuilder->getPhpFileContent(),
 			);
 		}
 	}
@@ -91,7 +91,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 		$this->assertSame(
 				'public hello $test;',
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -105,7 +105,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 		$this->assertSame(
 				'public hello $test = hello;',
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -119,7 +119,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 		$this->assertSame(
 				'public hello $test;',
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -134,7 +134,7 @@ class FieldBuilderPhpTest extends TestCase {
 
 		$this->assertSame(
 				'public hello|null $test;',
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -143,7 +143,7 @@ class FieldBuilderPhpTest extends TestCase {
 		FieldBuilder::create(
 				fieldName: 'test',
 				isNullable: true,
-		)->getPhpFileContent('');
+		)->getPhpFileContent();
 	}
 
 	#[Depends('testFieldNameAndPhpType')]
@@ -158,7 +158,7 @@ class FieldBuilderPhpTest extends TestCase {
 				. ' const test = hello;';
 		$this->assertSame(
 				$expected,
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -167,7 +167,7 @@ class FieldBuilderPhpTest extends TestCase {
 		FieldBuilder::create('test')
 				->setIsConst(true)
 				->setIsNullable(true)
-				->getPhpFileContent('');
+				->getPhpFileContent();
 	}
 
 	public function testIsConstNoDefaultValue(): void {
@@ -175,7 +175,7 @@ class FieldBuilderPhpTest extends TestCase {
 		FieldBuilder::create('test')
 				->setIsConst(true)
 				->setDefaultValue('')
-				->getPhpFileContent('');
+				->getPhpFileContent();
 	}
 
 	#[Depends('testFieldNameAndPhpType')]
@@ -184,7 +184,7 @@ class FieldBuilderPhpTest extends TestCase {
 				->setPhpType('hello')
 				->setCustomTypeHint('hi');
 
-		$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent(''));
+		$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent());
 		$this->assertCount(2, $fileContentLines);
 		$this->assertSame(
 				'/** @type hi */',
@@ -199,7 +199,7 @@ class FieldBuilderPhpTest extends TestCase {
 					->setPhpType('hello')
 					->setClassFieldEnum($classFieldEnum);
 
-			$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent(''));
+			$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent());
 			$this->assertCount(2, $fileContentLines);
 			$this->assertSame(
 					'#[ClassField(ClassFieldEnum::' . $classFieldEnum->name . ')]',
@@ -219,7 +219,7 @@ class FieldBuilderPhpTest extends TestCase {
 				. ' $test; // one comment';
 		$this->assertSame(
 				$expectedOneComment,
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 
 		$fieldBuilder->addComments('2nd comment');
@@ -228,7 +228,7 @@ class FieldBuilderPhpTest extends TestCase {
 				. ' $test; // one comment. 2nd comment';
 		$this->assertSame(
 				$expectedTwoComments,
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 
 		$fieldBuilder->setComments([]);
@@ -237,7 +237,7 @@ class FieldBuilderPhpTest extends TestCase {
 				. ' $test;';
 		$this->assertSame(
 				$expectedNoComments,
-				$fieldBuilder->getPhpFileContent(''),
+				$fieldBuilder->getPhpFileContent(),
 		);
 	}
 

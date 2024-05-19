@@ -2,7 +2,6 @@
 
 namespace SqlToCodeGenerator\sqlToMetaCode;
 
-use http\Exception\UnexpectedValueException;
 use LogicException;
 use SqlToCodeGenerator\codeGeneration\metadata\Bean;
 use SqlToCodeGenerator\codeGeneration\metadata\BeanProperty;

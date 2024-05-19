@@ -13,7 +13,6 @@ use SqlToCodeGenerator\test\exception\ExpectedException;
 use SqlToCodeGenerator\test\sql\bean\SqlDaoTestBackedEnum;
 use SqlToCodeGenerator\test\sql\bean\SqlDaoTestCompleteClass;
 use SqlToCodeGenerator\test\sql\bean\SqlDaoTestParamsContainer;
-use SqlToCodeGenerator\test\sql\bean\SqlDaoTestWithoutPrimaryField;
 use stdClass;
 
 class SqlDaoTest extends TestCase {
@@ -154,7 +153,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('emptyQuery'));
 
@@ -171,7 +170,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nWHERE where",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nWHERE where",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyWhere'));
 
@@ -188,7 +187,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nGROUP BY group by",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nGROUP BY group by",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyGroupBy'));
 
@@ -205,7 +204,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nORDER BY order by",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nORDER BY order by",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyOrderBy'));
 
@@ -222,7 +221,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nLIMIT limit",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nLIMIT limit",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('onlyLimit'));
 
@@ -239,7 +238,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nWHERE where\nGROUP BY group by\nORDER BY order by\nLIMIT limit",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nWHERE where\nGROUP BY group by\nORDER BY order by\nLIMIT limit",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeAll'));
 
@@ -261,7 +260,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nWHERE where\nGROUP BY group by",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nWHERE where\nGROUP BY group by",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeGroupBy'));
 
@@ -278,7 +277,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nWHERE where\nORDER BY order by",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nWHERE where\nORDER BY order by",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeOrderBy'));
 
@@ -295,7 +294,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nWHERE where\nLIMIT limit",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nWHERE where\nLIMIT limit",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('whereBeforeLimit'));
 
@@ -312,7 +311,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nGROUP BY group by\nORDER BY order by",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nGROUP BY group by\nORDER BY order by",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('groupByBeforeOrderBy'));
 
@@ -329,7 +328,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nGROUP BY group by\nLIMIT limit",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nGROUP BY group by\nLIMIT limit",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('groupByBeforeLimit'));
 
@@ -346,7 +345,7 @@ class SqlDaoTest extends TestCase {
 		$table = SqlDaoTestParamsContainer::TABLE;
 		$paramsContainer->pdo
 				->method('query')->with(
-						"SELECT SQL_CALC_FOUND_ROWS * FROM `{$table}`\nORDER BY order by\nLIMIT limit",
+						"SELECT SQL_CALC_FOUND_ROWS * FROM `$table`\nORDER BY order by\nLIMIT limit",
 						PDO::FETCH_ASSOC,
 				)->willThrowException(new ExpectedException('orderByBeforeLimit'));
 
