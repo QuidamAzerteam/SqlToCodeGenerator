@@ -18,6 +18,16 @@ class BeanPropertyTest extends TestCase {
 		$this->assertSame(lcfirst('test'), $beanProperty->getName());
 	}
 
+	public function testGetSqlNameWithoutId(): void {
+		$beanProperty = new BeanProperty();
+
+		$beanProperty->sqlName = 'ok';
+		$this->assertSame('ok', $beanProperty->getSqlNameWithoutId());
+
+		$beanProperty->sqlName = 'id_ok2';
+		$this->assertSame('ok2', $beanProperty->getSqlNameWithoutId());
+	}
+
 	public function testGetUniqueKey(): void {
 		$beanProperty = new BeanProperty();
 		$beanProperty->sqlName = 'test';
