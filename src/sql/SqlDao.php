@@ -153,7 +153,7 @@ abstract class SqlDao {
 						'string' => (string) $colValue,
 						'DateTime' => new DateTime($colValue),
 
-						default => (static function () use ($colValue, $item, $typeName) {
+						default => (static function () use ($colValue, $typeName) {
 							try {
 								$maybeItsAClass = new ReflectionClass($typeName);
 								if ($maybeItsAClass->isEnum()) {
@@ -165,6 +165,7 @@ abstract class SqlDao {
 									throw new LogicException("Value '$colValue' not found in enum: $typeName");
 								}
 							} catch (ReflectionException) {
+								// Ignore catch
 							}
 
 							throw new LogicException("PDO type return not implemented: $typeName");

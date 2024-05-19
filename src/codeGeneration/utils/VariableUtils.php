@@ -35,7 +35,7 @@ final class VariableUtils {
 	}
 
 	public static function stringToEnumCompliantValue(string $value): string {
-		return mb_strtoupper(preg_replace('/\s+/', '_', $value));
+		return mb_strtoupper(preg_replace('/\s+/u', '_', $value));
 	}
 
 }

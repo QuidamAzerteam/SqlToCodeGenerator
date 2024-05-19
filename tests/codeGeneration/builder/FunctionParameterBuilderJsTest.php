@@ -16,12 +16,12 @@ class FunctionParameterBuilderJsTest extends TestCase {
 
 		$this->assertSame(
 				' * @param {type} name',
-				$functionParameterBuilder->getJsDocFileContent(''),
+				$functionParameterBuilder->getJsDocFileContent(),
 		);
 
 		$this->assertSame(
 				'name',
-				$functionParameterBuilder->getJsParamFileContent(''),
+				$functionParameterBuilder->getJsParamFileContent(),
 		);
 	}
 
@@ -35,12 +35,12 @@ class FunctionParameterBuilderJsTest extends TestCase {
 
 		$this->assertSame(
 				' * @param {type} [name=hello world]',
-				$functionParameterBuilder->getJsDocFileContent(''),
+				$functionParameterBuilder->getJsDocFileContent(),
 		);
 
 		$this->assertSame(
 				'name = hello world',
-				$functionParameterBuilder->getJsParamFileContent(''),
+				$functionParameterBuilder->getJsParamFileContent(),
 		);
 	}
 

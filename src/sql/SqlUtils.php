@@ -8,7 +8,7 @@ abstract class SqlUtils {
 
 	private static PdoContainer $pdoContainer;
 
-	private final function __construct() {}
+	final private function __construct() {}
 
 	public static function initFromScratch(
 			string $dbName,

@@ -21,7 +21,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -65,7 +65,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -82,7 +82,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -99,7 +99,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -117,7 +117,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -133,7 +133,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -150,7 +150,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expectedPrivate,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -167,7 +167,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expectedProtected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -184,7 +184,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expectedDefault,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 
@@ -207,7 +207,7 @@ class FunctionBuilderPhpTest extends TestCase {
 			PHP;
 		$this->assertSame(
 				$expected,
-				$functionBuilder->getPhpFileContent(''),
+				$functionBuilder->getPhpFileContent(),
 		);
 	}
 

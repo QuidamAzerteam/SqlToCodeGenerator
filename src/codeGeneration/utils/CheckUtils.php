@@ -11,7 +11,7 @@ final class CheckUtils {
 			throw new LogicException('If does not make sense to have an empty namespace');
 		}
 		if (preg_match(
-				'/^((?:\w+|\w+\\\\)(?:\w+\\\\?)+)$/',
+				'/^((?:\w+|\w+\\\\)(?:\w+\\\\?)+)$/u',
 				$fullNamespace,
 		) !== 1) {
 			throw new LogicException(htmlentities($fullNamespace) . ' does not match a valid PHP namespace');

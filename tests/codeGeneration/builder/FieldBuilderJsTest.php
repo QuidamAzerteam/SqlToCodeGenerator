@@ -12,7 +12,7 @@ class FieldBuilderJsTest extends TestCase {
 	public function testFieldNameAndJsType(): void {
 		$fieldBuilder = FieldBuilder::create('test')->setJsType('hello');
 
-		$fileContentLines = explode("\n", $fieldBuilder->getJsFileContent(''));
+		$fileContentLines = explode("\n", $fieldBuilder->getJsFileContent());
 		$this->assertCount(2, $fileContentLines);
 		$this->assertSame(
 				'/** @type {hello} */',
@@ -31,7 +31,7 @@ class FieldBuilderJsTest extends TestCase {
 
 	public function testNoJsType(): void {
 		$this->expectException(LogicException::class);
-		FieldBuilder::create('test')->setJsType('')->getJsFileContent('');
+		FieldBuilder::create('test')->setJsType('')->getJsFileContent();
 	}
 
 	#[Depends('testFieldNameAndJsType')]
@@ -50,14 +50,14 @@ class FieldBuilderJsTest extends TestCase {
 		$fieldBuilder = FieldBuilder::create('test')->setJsType('hello');
 
 		$fieldBuilder->setDefaultValue('hello');
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[1];
 		$this->assertSame(
 				'test = hello',
 				$fileContentLine,
 		);
 
 		$fieldBuilder->setDefaultValue('');
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[1];
 		$this->assertSame(
 				'test',
 				$fileContentLine,
@@ -70,7 +70,7 @@ class FieldBuilderJsTest extends TestCase {
 				->setJsType('hello')
 				->setIsNullable(true);
 
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[0];
 		$this->assertSame(
 				'/** @type {hello|null} */',
 				$fileContentLine,
@@ -83,7 +83,7 @@ class FieldBuilderJsTest extends TestCase {
 				->setJsType('hello')
 				->setCustomTypeHint('hi');
 
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[0];
 		$this->assertNotSame(
 				'/** @type {hello} */',
 				$fileContentLine,
@@ -104,7 +104,7 @@ class FieldBuilderJsTest extends TestCase {
 				->setIsNullable(true);
 
 		$fieldBuilder->setIsNullable(true);
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[0];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[0];
 		$this->assertNotSame(
 				'/** @type {hello|null} */',
 				$fileContentLine,
@@ -121,21 +121,21 @@ class FieldBuilderJsTest extends TestCase {
 				->setJsType('hello');
 
 		$fieldBuilder->addComments('one comment');
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[1];
 		$this->assertSame(
 				'test // one comment',
 				$fileContentLine,
 		);
 
 		$fieldBuilder->addComments('2nd comment');
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[1];
 		$this->assertSame(
 				'test // one comment. 2nd comment',
 				$fileContentLine,
 		);
 
 		$fieldBuilder->setComments([]);
-		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent(''))[1];
+		$fileContentLine = explode("\n", $fieldBuilder->getJsFileContent())[1];
 		$this->assertSame(
 				'test',
 				$fileContentLine,

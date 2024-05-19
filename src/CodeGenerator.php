@@ -95,6 +95,7 @@ class CodeGenerator {
 	 * @param string $port For {@see PDO} connection only
 	 * @param string $user For {@see PDO} connection only. Need to be able to SELECT information_schema
 	 * @param string $password For {@see PDO} connection only
+	 * @param LoggerInterface $log
 	 * @param string $bdd
 	 * @param string $basePackage
 	 * @param string $phpDirName
@@ -105,6 +106,7 @@ class CodeGenerator {
 	 * @param string $enumsDirName
 	 * @param string $daoDirName
 	 * @param string|null $testDirName
+	 * @param int $waitTimeout
 	 * @return static
 	 * @see __construct
 	 */

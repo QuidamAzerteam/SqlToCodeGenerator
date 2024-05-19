@@ -270,8 +270,7 @@ class Bean {
 				$uniqueFieldsParams = [];
 				foreach ($colNames as $colName) {
 					if (!array_key_exists($colName, $propertiesBySqlName)) {
-						throw new LogicException("Missing \"{$colName}\" col in "
-								. "\$propertiesBySqlName for class {$this->getClassName()}");
+						throw new LogicException("Missing \"$colName\" col in \$propertiesBySqlName for class {$this->getClassName()}");
 					}
 					$property = $propertiesBySqlName[$colName];
 
@@ -321,9 +320,11 @@ class Bean {
 			);
 			$classBuilder->addPhpFunctionBuilders($completeFunctionBuilder);
 
+			$arrayVarName = 'elements';
+			$arrayParameterName = 'element';
 			$completeFunctionBuilder->addParameterBuilders(FunctionParameterBuilder::create(
 					type: 'array',
-					name: 'elements',
+					name: $arrayVarName,
 			));
 
 			$field = $foreignBeanField->isArray
@@ -332,11 +333,12 @@ class Bean {
 
 			$completeFunctionBuilder->addLines(
 					Line::create("\$fkIds = [];"),
-					Line::create("foreach (\$elements as \$element) {"),
+					Line::create("foreach (\$$arrayVarName as \$$arrayParameterName) {"),
 					Line::create("\$fkIds[\$element->$foreignBeanWithPropertyName] = \$element->$foreignBeanWithPropertyName;", 1),
 					Line::create("}", -1),
 					Line::create("\$fkDao = new {$foreignBeanField->toBean->getDaoName()}();"),
-					Line::create("\$fkElements = \$fkDao->get('$foreignBeanOnPropertySqlName IN (\"' . implode('\", \"', \$fkIds) . '\")');"),
+					Line::create("\$fkElements = \$fkDao->get('$foreignBeanOnPropertySqlName "
+							. "IN (\"' . implode('\", \"', \$fkIds) . '\")');"),
 					Line::create("\$fkElementsByFkProperty = [];"),
 					Line::create("foreach (\$fkElements as \$fkElement) {"),
 					Line::create("if (!array_key_exists(\$fkElement->$foreignBeanOnPropertyName, \$fkElementsByFkProperty)) {", 1),
@@ -344,23 +346,25 @@ class Bean {
 					Line::create("}", -1),
 					Line::create("\$fkElementsByFkProperty[\$fkElement->$foreignBeanOnPropertyName][] = \$fkElement;"),
 					Line::create("}", -1),
-					Line::create("foreach (\$elements as \$element) {"),
+					Line::create("foreach (\$$arrayVarName as \$$arrayParameterName) {"),
 			);
 			if ($foreignBeanField->isArray) {
 				$completeFunctionBuilder->addLines(
 						Line::create(
-								"\$element->" . lcfirst($field) . " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? [];",
+								"\$$arrayParameterName->" . lcfirst($field)
+										. " = \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName] ?? [];",
 								1,
 						),
-						Line::create("foreach (\$element->" . lcfirst($field) . " as \$fkElement) {"),
-						Line::create("\$fkElement->" . lcfirst($this->getClassName()) . " = \$element;", 1),
+						Line::create("foreach (\$$arrayParameterName->" . lcfirst($field) . " as \$fkElement) {"),
+						Line::create("\$$arrayParameterName->" . lcfirst($this->getClassName()) . " = \$element;", 1),
 						Line::create("}", -1),
 				);
 			} else {
 				$completeFunctionBuilder->addLines(
-						Line::create("\$element->" . lcfirst($field) . " ="
-								. " \$fkElementsByFkProperty[\$element->$foreignBeanWithPropertyName][0] ?? null;"),
-						Line::create("\$element->" . lcfirst($field) . "->" . lcfirst($this->getClassName()) . " = \$element;"),
+						Line::create("\$$arrayParameterName->" . lcfirst($field) . " ="
+								. " \$fkElementsByFkProperty[\$$arrayParameterName->$foreignBeanWithPropertyName][0] ?? null;", 1),
+						Line::create("\$$arrayParameterName->" . lcfirst($field)
+								. "->" . lcfirst($this->getClassName()) . " = \$$arrayParameterName;"),
 				);
 			}
 			$completeFunctionBuilder->addLines(Line::create("}", -1));
