@@ -59,7 +59,8 @@ final class SqlToMetaCodeUtils {
 			$property = $beanPropertiesByUniqueKey[$property->getUniqueKey()] ?? $property;
 			$beanPropertiesByUniqueKey[$property->getUniqueKey()] = $property;
 
-			$property->isNullable = $column->isNullable === 'YES';
+			$property->isNullable = $column->isNullable();
+			$property->isGenerated = $column->isGenerated();
 			$property->propertyType = BeanPropertyType::getPropertyTypeFromSql($column->dataType, $column->columnType);
 			$property->columnKey = BeanPropertyColKey::tryFrom($column->columnKey);
 			$defaultValue = $column->columnDefault;

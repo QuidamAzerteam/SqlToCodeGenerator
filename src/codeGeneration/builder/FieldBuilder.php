@@ -19,7 +19,7 @@ class FieldBuilder {
 	 * @param bool $isConst
 	 * @param string|null $customTypeHint
 	 * @param string[] $comments
-	 * @param ClassFieldEnum|null $classFieldEnum
+	 * @param ClassFieldEnum[] $classFieldEnum
 	 */
 	public function __construct(
 			private readonly string $fieldName,
@@ -31,7 +31,7 @@ class FieldBuilder {
 			private bool $isConst = false,
 			private ?string $customTypeHint = null,
 			private array $comments = [],
-			private ClassFieldEnum|null $classFieldEnum = null,
+			private array $classFieldEnums = [],
 	) {
 		CheckUtils::checkPhpFieldName($fieldName);
 		CheckUtils::checkPhpType($phpType);
@@ -117,8 +117,12 @@ class FieldBuilder {
 		return $this;
 	}
 
-	public function setClassFieldEnum(ClassFieldEnum|null $classFieldEnum): static {
-		$this->classFieldEnum = $classFieldEnum;
+	public function addClassFieldEnums(?ClassFieldEnum ...$classFieldEnums): static {
+		foreach ($classFieldEnums as $classFieldEnum) {
+			if ($classFieldEnum !== null && !in_array($classFieldEnum, $this->classFieldEnums)) {
+				$this->classFieldEnums[] = $classFieldEnum;
+			}
+		}
 		return $this;
 	}
 
@@ -140,8 +144,15 @@ class FieldBuilder {
 			$fileContent .= $prependLinesBy . "/** @type $this->customTypeHint */\n";
 		}
 
-		if ($this->classFieldEnum !== null) {
-			$fileContent .= $prependLinesBy . "#[ClassField(ClassFieldEnum::{$this->classFieldEnum->name})]\n";
+		if ($this->classFieldEnums) {
+			$classFieldsAsString = implode(
+					', ',
+					array_map(
+							static fn (ClassFieldEnum $classFieldEnum): string => 'ClassFieldEnum::' . $classFieldEnum->name,
+							$this->classFieldEnums,
+					),
+			);
+			$fileContent .= $prependLinesBy . "#[ClassField($classFieldsAsString)]\n";
 		}
 
 		$varParts = [];

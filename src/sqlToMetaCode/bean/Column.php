@@ -64,4 +64,12 @@ class Column {
 		]);
 	}
 
+	public function isNullable(): bool {
+		return $this->isNullable === 'YES';
+	}
+
+	public function isGenerated(): bool {
+		return $this->isGenerated === 'ALWAYS';
+	}
+
 }

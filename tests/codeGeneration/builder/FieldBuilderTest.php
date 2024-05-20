@@ -50,7 +50,7 @@ class FieldBuilderTest extends TestCase {
 
 	public function testSetClassFieldEnumChain(): void {
 		$fieldBuilder = FieldBuilder::create('test');
-		$this->assertSame($fieldBuilder, $fieldBuilder->setClassFieldEnum(ClassFieldEnum::PRIMARY));
+		$this->assertSame($fieldBuilder, $fieldBuilder->addClassFieldEnums(ClassFieldEnum::PRIMARY));
 	}
 
 	public function testIsNullable(): void {
