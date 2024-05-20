@@ -579,7 +579,6 @@ class SqlDaoTest extends TestCase {
 		$valuesParts = [
 			"`1`",
 			"`$item->float`",
-			"`$item->int`",
 			"`$item->string`",
 			"`{$item->dateTime->format('Y-m-d H:i:s')}`",
 			"`{$item->sqlDaoTestBackedEnum->value}`",
@@ -588,7 +587,7 @@ class SqlDaoTest extends TestCase {
 
 		$paramsContainer->pdo->method('exec')
 				->with(<<<SQL
-					INSERT INTO `sql_table` (`sql_bool`, `sql_float`, `sql_int`, `sql_string`, `sql_dateTime`, `sql_sqlDaoTestBackedEnum`)
+					INSERT INTO `sql_table` (`sql_bool`, `sql_float`, `sql_string`, `sql_dateTime`, `sql_sqlDaoTestBackedEnum`)
 					VALUES ($valuesAsString)
 					ON DUPLICATE KEY UPDATE `sql_bool`=VALUES(`sql_bool`), `sql_float`=VALUES(`sql_float`), `sql_string`=VALUES(`sql_string`), `sql_dateTime`=VALUES(`sql_dateTime`), `sql_sqlDaoTestBackedEnum`=VALUES(`sql_sqlDaoTestBackedEnum`)
 					SQL,
