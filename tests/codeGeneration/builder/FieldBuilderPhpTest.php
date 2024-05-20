@@ -197,7 +197,7 @@ class FieldBuilderPhpTest extends TestCase {
 		foreach (ClassFieldEnum::cases() as $classFieldEnum) {
 			$fieldBuilder = FieldBuilder::create('test')
 					->setPhpType('hello')
-					->setClassFieldEnum($classFieldEnum);
+					->addClassFieldEnums($classFieldEnum);
 
 			$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent());
 			$this->assertCount(2, $fileContentLines);
@@ -206,6 +206,24 @@ class FieldBuilderPhpTest extends TestCase {
 					$fileContentLines[0],
 			);
 		}
+	}
+
+	#[Depends('testFieldNameAndPhpType')]
+	public function testClassFieldEnums(): void {
+		$fieldBuilder = FieldBuilder::create('test')
+				->setPhpType('hello')
+				->addClassFieldEnums(...ClassFieldEnum::cases());
+
+		$fileContentLines = explode("\n", $fieldBuilder->getPhpFileContent());
+		$this->assertCount(2, $fileContentLines);
+		$this->assertSame(
+				'#[ClassField('
+					. implode(', ', array_map(
+							static fn (ClassFieldEnum $classFieldEnum): string => 'ClassFieldEnum::' . $classFieldEnum->name,
+							ClassFieldEnum::cases(),
+					)) . ')]',
+				$fileContentLines[0],
+		);
 	}
 
 	#[Depends('testFieldNameAndPhpType')]

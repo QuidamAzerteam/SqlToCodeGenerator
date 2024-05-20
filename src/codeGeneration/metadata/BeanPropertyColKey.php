@@ -15,10 +15,12 @@ enum BeanPropertyColKey {
 	case MUL;
 
 	public static function tryFrom(string $columnKey): ?self {
-		return array_filter(
-				BeanPropertyColKey::cases(),
-				static fn(self $case): bool => $case->name === $columnKey,
-		)[0] ?? null;
+		foreach (BeanPropertyColKey::cases() as $case) {
+			if ($case->name === $columnKey) {
+				return $case;
+			}
+		}
+		return null;
 	}
 
 	public function toClassFieldEnum(): ClassFieldEnum|null {

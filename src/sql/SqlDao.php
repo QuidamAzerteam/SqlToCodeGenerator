@@ -240,10 +240,10 @@ abstract class SqlDao {
 				foreach ($attribute->getArguments() as $argument) {
 					if (is_object($argument) && $argument::class === ClassFieldEnum::class && in_array(
 							$argument->name,
-							[ClassFieldEnum::PRIMARY->name, ClassFieldEnum::IMMUTABLE->name],
+							[ClassFieldEnum::PRIMARY->name, ClassFieldEnum::IMMUTABLE->name, ClassFieldEnum::GENERATED->name],
 							true,
 					)) {
-						$fieldsAttributesToUpdate[] = $property->getName();
+						$fieldsAttributesToUpdate[$property->getName()] = $property->getName();
 						break;
 					}
 				}
@@ -412,12 +412,31 @@ abstract class SqlDao {
 		foreach ($classFieldAttributes as $classFieldAttribute) {
 			/** @var ClassField $classField */
 			$classField = $classFieldAttribute->newInstance();
-			if ($classField->classFieldEnum === ClassFieldEnum::PRIMARY) {
+			if (in_array(ClassFieldEnum::PRIMARY, $classField->classFieldEnums, true)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private function canReflectionPropertyBeUpdated(ReflectionProperty $reflectionProperty): bool {
+		$classFieldAttributes = $reflectionProperty->getAttributes(ClassField::class);
+		foreach ($classFieldAttributes as $classFieldAttribute) {
+			/** @var ClassField $classField */
+			$classField = $classFieldAttribute->newInstance();
+			foreach ($classField->classFieldEnums as $classFieldEnum) {
+				if (in_array($classFieldEnum, [
+						ClassFieldEnum::PRIMARY,
+						ClassFieldEnum::IMMUTABLE,
+						ClassFieldEnum::GENERATED,
+				], true)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -434,9 +453,11 @@ abstract class SqlDao {
 
 		$sqlFields = [];
 		foreach ($reflectionProperties as $reflectionProperty) {
-			$attributeName = $reflectionProperty->getName();
-			$attributeSqlName = static::getSqlColFromField($attributeName);
-			$sqlFields[] = "`$attributeSqlName`";
+			if ($this->canReflectionPropertyBeUpdated($reflectionProperty)) {
+				$attributeName = $reflectionProperty->getName();
+				$attributeSqlName = static::getSqlColFromField($attributeName);
+				$sqlFields[] = "`$attributeSqlName`";
+			}
 		}
 
 		$sqlValuesGroups = [];
@@ -456,10 +477,8 @@ abstract class SqlDao {
 					$attributeName = $reflectionProperty->getName();
 					$attributeSqlName = static::getSqlColFromField($attributeName);
 
-					$sqlValues[] = $this->getQuotedValueOfReflectionProperty($element, $reflectionProperty);
-
-					$isPrimaryField = $this->isReflectionPropertyPrimary($reflectionProperty);
-					if (!$isPrimaryField) {
+					if ($this->canReflectionPropertyBeUpdated($reflectionProperty)) {
+						$sqlValues[] = $this->getQuotedValueOfReflectionProperty($element, $reflectionProperty);
 						$sqlUpdates[] = "`$attributeSqlName`=VALUES(`$attributeSqlName`)";
 					}
 				}

@@ -18,6 +18,7 @@ class BeanProperty {
 	public array $enums = [];
 	public string|null $defaultValueAsString = null;
 	public string|null $sqlComment = null;
+	public bool $isGenerated = false;
 
 	public function getName(): string {
 		return lcfirst(SqlDao::sqlToCamelCase($this->sqlName));
@@ -36,7 +37,7 @@ class BeanProperty {
 				->setPhpType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getPhpType($this->propertyType))
 				->setJsType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getJsType($this->propertyType))
 				->setIsNullable($this->isNullable || $this->columnKey === BeanPropertyColKey::PRI)
-				->setClassFieldEnum($this->columnKey?->toClassFieldEnum());
+				->addClassFieldEnums($this->columnKey?->toClassFieldEnum());
 
 		if ($this->enums) {
 			$fieldBuilder->setCustomTypeHint("{$this->enums[0]->getFullNamespace()}[]");
@@ -57,8 +58,11 @@ class BeanProperty {
 		if ($this->sqlComment) {
 			$fieldBuilder->addComments($this->sqlComment);
 			if (str_contains($this->sqlComment, 'ImmutableAttribute')) {
-				$fieldBuilder->setClassFieldEnum($this->columnKey?->toClassFieldEnum() ?? ClassFieldEnum::IMMUTABLE);
+				$fieldBuilder->addClassFieldEnums(ClassFieldEnum::IMMUTABLE);
 			}
+		}
+		if ($this->isGenerated) {
+			$fieldBuilder->addClassFieldEnums(ClassFieldEnum::GENERATED);
 		}
 
 		return $fieldBuilder;

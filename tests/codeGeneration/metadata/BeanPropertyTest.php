@@ -117,7 +117,7 @@ class BeanPropertyTest extends TestCase {
 				->setIsNullable(true)
 				->setDefaultValue('null')
 				->addComments(BeanPropertyColKey::PRI->toHumanReadableString() . ' key')
-				->setClassFieldEnum(BeanPropertyColKey::PRI->toClassFieldEnum());
+				->addClassFieldEnums(BeanPropertyColKey::PRI->toClassFieldEnum());
 		$this->assertSame(
 				$fieldBuilder->getPhpFileContent(),
 				$beanProperty->getFieldBuilder()->getPhpFileContent(),
@@ -140,7 +140,7 @@ class BeanPropertyTest extends TestCase {
 				->setJsType(BeanPropertyType::getJsType($beanProperty->propertyType))
 				->setIsNullable(false)
 				->addComments(BeanPropertyColKey::UNI->toHumanReadableString() . ' key')
-				->setClassFieldEnum(BeanPropertyColKey::UNI->toClassFieldEnum());
+				->addClassFieldEnums(BeanPropertyColKey::UNI->toClassFieldEnum());
 		$this->assertSame(
 				$fieldBuilder->getPhpFileContent(),
 				$beanProperty->getFieldBuilder()->getPhpFileContent(),
@@ -186,5 +186,17 @@ class BeanPropertyTest extends TestCase {
 		);
 	}
 
+	public function testGeneratedAttribute(): void {
+		$beanProperty = new BeanProperty();
+		$beanProperty->sqlName = 'test';
+		$beanProperty->isNullable = false;
+		$beanProperty->propertyType = BeanPropertyType::STRING;
+		$beanProperty->isGenerated = true;
+
+		$this->assertStringContainsString(
+				'#[ClassField(ClassFieldEnum::GENERATED)]',
+				$beanProperty->getFieldBuilder()->getPhpFileContent(),
+		);
+	}
 
 }

@@ -6,8 +6,13 @@ use Attribute;
 
 #[Attribute] class ClassField {
 
+	/** @var ClassFieldEnum[] */
+	public readonly array $classFieldEnums;
+
 	public function __construct(
-			public readonly ClassFieldEnum $classFieldEnum,
-	) {}
+			ClassFieldEnum ...$classFieldEnums,
+	) {
+		$this->classFieldEnums = $classFieldEnums;
+	}
 
 }

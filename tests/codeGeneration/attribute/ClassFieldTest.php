@@ -12,7 +12,7 @@ class ClassFieldTest extends TestCase {
 		foreach (ClassFieldEnum::cases() as $classFieldEnum) {
 			$this->assertSame(
 					$classFieldEnum,
-					(new ClassField($classFieldEnum))->classFieldEnum,
+					(new ClassField($classFieldEnum))->classFieldEnums[0],
 			);
 		}
 	}
