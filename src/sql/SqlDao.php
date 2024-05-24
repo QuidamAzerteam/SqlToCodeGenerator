@@ -198,6 +198,7 @@ abstract class SqlDao {
 		if (!$elements) {
 			return;
 		}
+		$elements = array_values($elements);
 		$uniqueKeyFromElement = static function ($element) use ($uniqueFields) {
 			return implode('_', array_map(
 					static function ($uniqueField) use ($element) {
@@ -447,6 +448,7 @@ abstract class SqlDao {
 		if (!$elements) {
 			return;
 		}
+		$elements = array_values($elements);
 		$table = $this->getTable();
 
 		$reflectionProperties = $this->getReflectionProperties();
