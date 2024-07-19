@@ -232,11 +232,11 @@ abstract class SqlDao {
 		$reflexionClass = new ReflectionClass($elements[0]::class);
 		/** @var string[] $fieldsAttributesToUpdate */
 		$fieldsAttributesToUpdate = [];
-		/** @var ReflectionProperty $property */
-		foreach ([
-			...$reflexionClass->getProperties(),
-			...$reflexionClass->getParentClass()->getProperties() ?? [],
-		] as $property) {
+		$properties = $reflexionClass->getProperties();
+		if ($reflexionClass->getParentClass() !== false) {
+			array_push($properties, ...$reflexionClass->getParentClass()->getProperties());
+		}
+		foreach ($properties as $property) {
 			foreach ($property->getAttributes() as $attribute) {
 				foreach ($attribute->getArguments() as $argument) {
 					if (is_object($argument) && $argument::class === ClassFieldEnum::class && in_array(
