@@ -51,7 +51,9 @@ class Bean {
 				docLines: ['Bean of `' . $this->sqlDatabase . '.' . $this->sqlTable . '`'],
 		);
 
+		$propertyNamesIndexed = [];
 		foreach ($this->properties as $property) {
+			$propertyNamesIndexed[$property->getName()] = null;
 			$classBuilder->addFieldBuilders($property->getFieldBuilder());
 			if ($property->columnKey?->toClassFieldEnum() !== null) {
 				$classBuilder->addImports(
@@ -65,7 +67,11 @@ class Bean {
 
 		if ($this->foreignBeanFields) {
 			foreach ($this->foreignBeanFields as $foreignBeanField) {
-				$classBuilder->addFieldBuilders($foreignBeanField->getAsFieldBuilderForPhp());
+				$fieldBuilder = $foreignBeanField->getAsFieldBuilderForPhp();
+				if (array_key_exists($fieldBuilder->getFieldName(), $propertyNamesIndexed)) {
+					$fieldBuilder->setFieldName($fieldBuilder->getFieldName() . 'Bean');
+				}
+				$classBuilder->addFieldBuilders($fieldBuilder);
 			}
 		}
 

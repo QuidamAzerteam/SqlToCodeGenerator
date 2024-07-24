@@ -22,7 +22,7 @@ class FieldBuilder {
 	 * @param ClassFieldEnum[] $classFieldEnum
 	 */
 	public function __construct(
-			private readonly string $fieldName,
+			private string $fieldName,
 			private readonly Visibility $visibility = Visibility::PUBLIC,
 			private string $phpType = '',
 			private string $jsType = '',
@@ -63,6 +63,15 @@ class FieldBuilder {
 				customTypeHint: $customTypeHint,
 				comments: $comments,
 		);
+	}
+
+	public function getFieldName(): string {
+		return $this->fieldName;
+	}
+
+	public function setFieldName(string $fieldName): void {
+		CheckUtils::checkPhpFieldName($fieldName);
+		$this->fieldName = $fieldName;
 	}
 
 	public function doesDefaultValueExists(): bool {
