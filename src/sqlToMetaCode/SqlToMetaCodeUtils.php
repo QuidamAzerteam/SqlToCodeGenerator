@@ -154,12 +154,7 @@ final class SqlToMetaCodeUtils {
 			$onProperty = $beanPropertiesByUniqueKey[$keyColumnUsage->getToColumnUniqueIdentifier()];
 
 			$fkBean = new ForeignBeanField();
-			$uniqueKey =  implode('_', [
-				$bean->sqlTable,
-				$onBean->sqlTable,
-				$onProperty->sqlName,
-			]);
-			$bean->foreignBeanFields[$uniqueKey] = $fkBean;
+			$bean->foreignBeanFields[] = $fkBean;
 
 			$fkBean->toBean = $onBean;
 			$fkBean->withProperty = $property;
@@ -170,7 +165,7 @@ final class SqlToMetaCodeUtils {
 			$reverseFkBean->toBean = $bean;
 			$reverseFkBean->onProperty = $fkBean->withProperty;
 			$reverseFkBean->withProperty = $fkBean->onProperty;
-			$fkBean->toBean->foreignBeanFields[$uniqueKey] = $reverseFkBean;
+			$fkBean->toBean->foreignBeanFields[] = $reverseFkBean;
 		}
 
 		return array_values($beansByUniqueIdentifier);
