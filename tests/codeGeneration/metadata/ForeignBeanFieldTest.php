@@ -14,7 +14,7 @@ class ForeignBeanFieldTest extends TestCase {
 
 	public function testGetAsFieldBuilder(): void {
 		$toBean = $this->createMock(Bean::class);
-		$toBean->method('getClassName')->willReturn('getClassName');
+		$toBean->method('getClassName')->willReturn('IAmAClass');
 
 		$beanProperty = $this->createMock(BeanProperty::class);
 		$beanProperty->sqlName = 'sql_name';
@@ -25,17 +25,18 @@ class ForeignBeanFieldTest extends TestCase {
 		$foreignBeanField = new ForeignBeanField();
 		$foreignBeanField->toBean = $toBean;
 		$foreignBeanField->withProperty = $beanProperty;
+		$foreignBeanField->onProperty = $beanProperty;
 
 		$this->assertSame(
 				FieldBuilder::create(lcfirst('sqlName'))
-						->setPhpType('getClassName')
+						->setPhpType('IAmAClass')
 						->getPhpFileContent(),
 				$foreignBeanField->getAsFieldBuilderForPhp()
 						->getPhpFileContent(),
 		);
 		$this->assertSame(
 				FieldBuilder::create(lcfirst('sqlName'))
-						->setJsType('getClassName')
+						->setJsType('IAmAClass')
 						->getJsFileContent(),
 				$foreignBeanField->getAsFieldBuilderForJs()
 						->getJsFileContent(),
@@ -44,17 +45,17 @@ class ForeignBeanFieldTest extends TestCase {
 		$foreignBeanField->isArray = true;
 
 		$this->assertSame(
-				FieldBuilder::create(VariableUtils::getPluralOfVarName('getClassName'))
+				FieldBuilder::create(lcfirst(VariableUtils::getPluralOfVarName('IAmAClass')))
 						->setPhpType('array')
 						->setDefaultValue('[]')
-						->setCustomTypeHint('getClassName[]')
+						->setCustomTypeHint('IAmAClass[]')
 						->getPhpFileContent(),
 				$foreignBeanField->getAsFieldBuilderForPhp()
 						->getPhpFileContent(),
 		);
 		$this->assertSame(
-				FieldBuilder::create(VariableUtils::getPluralOfVarName('getClassName'))
-						->setJsType('getClassName[]')
+				FieldBuilder::create(lcfirst(VariableUtils::getPluralOfVarName('IAmAClass')))
+						->setJsType('IAmAClass[]')
 						->getJsFileContent(),
 				$foreignBeanField->getAsFieldBuilderForJs()
 						->getJsFileContent(),

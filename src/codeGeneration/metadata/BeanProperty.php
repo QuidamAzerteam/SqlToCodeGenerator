@@ -20,12 +20,16 @@ class BeanProperty {
 	public string|null $sqlComment = null;
 	public bool $isGenerated = false;
 
-	public function getName(): string {
-		return lcfirst(SqlDao::sqlToCamelCase($this->sqlName));
+	public function getName(?string $sqlPartToRemove = null): string {
+		$sqlName = $this->sqlName;
+		if ($sqlPartToRemove !== null) {
+			$sqlName = str_replace($sqlPartToRemove . '_', '', $sqlName);
+		}
+		return lcfirst(SqlDao::sqlToCamelCase($sqlName));
 	}
 
 	public function getSqlNameWithoutId(): string {
-		return preg_replace('/^id_(.+)$/', '$1', $this->sqlName);
+		return str_replace('id_', '',$this->sqlName);
 	}
 
 	public function getUniqueKey(): string {

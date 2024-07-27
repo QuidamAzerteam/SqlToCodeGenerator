@@ -309,7 +309,10 @@ class Bean {
 
 		foreach ($this->foreignBeanFields as $foreignBeanField) {
 			if ($foreignBeanField->isArray) {
-				$classNameInMethod = VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName());
+				$classNameInMethod = $foreignBeanField->toBean->getClassName()
+						. ucfirst(VariableUtils::getPluralOfVarName(
+								$foreignBeanField->onProperty->getName($foreignBeanField->withProperty->sqlName)
+						));
 			} else {
 				// Array are reverse beans, so keep this logic in the else here
 				$classNameInMethod = ucfirst(SqlDao::sqlToCamelCase($foreignBeanField->withProperty->getSqlNameWithoutId()));

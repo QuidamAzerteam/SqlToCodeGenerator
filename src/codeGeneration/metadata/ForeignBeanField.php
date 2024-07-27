@@ -15,7 +15,10 @@ class ForeignBeanField {
 
 	public function getAsFieldBuilderForPhp(): FieldBuilder {
 		if ($this->isArray) {
-			$foreignBeanFieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName(lcfirst($this->toBean->getClassName())))
+			$foreignBeanFieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName(lcfirst(
+					$this->toBean->getClassName()
+					. ucfirst($this->onProperty->getName($this->withProperty->sqlName))
+			)))
 					->setPhpType('array')
 					->setDefaultValue('[]')
 					->setCustomTypeHint($this->toBean->getClassName() . '[]');
