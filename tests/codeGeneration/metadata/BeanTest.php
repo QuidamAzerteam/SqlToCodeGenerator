@@ -215,7 +215,10 @@ class BeanTest extends TestCase {
 		);
 
 		$foreignBeanField->isArray = true;
-		$classNameInMethod = VariableUtils::getPluralOfVarName($foreignBeanField->toBean->getClassName());
+		$classNameInMethod = $foreignBeanField->toBean->getClassName()
+				. ucfirst(VariableUtils::getPluralOfVarName(
+						$foreignBeanField->onProperty->getName($foreignBeanField->withProperty->sqlName)
+				));
 		$this->assertStringContainsString(
 				"public function completeWith$classNameInMethod(",
 				$bean->getPhpDaoFileContent(),

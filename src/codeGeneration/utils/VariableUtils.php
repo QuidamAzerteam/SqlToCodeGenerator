@@ -6,14 +6,18 @@ final class VariableUtils {
 
 	public static function getPluralOfVarName($var): string {
 		// Some exceptions first
-		$exceptionAsPlural = match ($var) {
+		$exceptionsForPlural = [
 			'data' => 'dataList',
 			'information' => 'informationList',
 			'scenario' => 'scenarii',
-			default => null,
-		};
-		if ($exceptionAsPlural !== null) {
-			return $exceptionAsPlural;
+			'child' => 'children',
+		];
+		foreach ($exceptionsForPlural as $exception => $pluralToUse) {
+			if (str_ends_with($var, $exception)) {
+				return rtrim($var, $exception) . $pluralToUse;
+			} else if (str_ends_with($var, ucfirst($exception))) {
+				return rtrim($var, ucfirst($exception)) . ucfirst($pluralToUse);
+			}
 		}
 
 		$arrayVar = substr($var, 0, -1);
