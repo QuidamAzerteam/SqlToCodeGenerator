@@ -99,6 +99,7 @@ class Bean {
 		foreach ($this->properties as $property) {
 			$fieldBuilder = FieldBuilder::create(strtoupper($property->sqlName) . '_SQL')
 					->setIsConst(true)
+					->setPhpType('string')
 					->setDefaultValue("'$property->sqlName'");
 			$classBuilder->addFieldBuilders($fieldBuilder);
 

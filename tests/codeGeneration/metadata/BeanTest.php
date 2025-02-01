@@ -117,6 +117,7 @@ class BeanTest extends TestCase {
 		$this->assertStringContainsString(
 				FieldBuilder::create(strtoupper($beanProperty->sqlName) . '_SQL')
 						->setIsConst(true)
+						->setPhpType('string')
 						->setDefaultValue("'$beanProperty->sqlName'")
 						->getPhpFileContent(),
 				$bean->getPhpDaoFileContent(),

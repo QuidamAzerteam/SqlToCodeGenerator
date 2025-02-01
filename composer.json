@@ -1,25 +1,25 @@
 {
-    "name": "quidamazerteam/sql-to-code-generator",
-    "description": "SQL to PHP and JS code generation",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "QuidamAzerty",
-            "email": "valentin.gohard@hotmail.fr"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "SqlToCodeGenerator\\": "src",
-            "SqlToCodeGenerator\\test\\": "tests"
-        }
-    },
-    "require-dev": {
-        "roave/security-advisories": "dev-latest",
-        "phpunit/phpunit": "^10.3"
-    },
-    "require": {
-        "php": "8.1.*",
-        "ext-pdo": "*"
-    }
+	"name": "quidamazerteam/sql-to-code-generator",
+	"description": "SQL to PHP and JS code generation",
+	"license": "Apache-2.0",
+	"authors": [
+		{
+			"name": "QuidamAzerty",
+			"email": "valentin.gohard@hotmail.fr"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"SqlToCodeGenerator\\": "src",
+			"SqlToCodeGenerator\\test\\": "tests"
+		}
+	},
+	"require-dev": {
+		"roave/security-advisories": "dev-latest",
+		"phpunit/phpunit": "^11"
+	},
+	"require": {
+		"php": "8.3.*",
+		"ext-pdo": "*"
+	}
 }
