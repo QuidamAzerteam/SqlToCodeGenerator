@@ -177,6 +177,7 @@ class FieldBuilder {
 					'final',
 					$this->visibility->value,
 					'const',
+					$this->phpType,
 					$this->fieldName . $defaultAsString,
 			);
 		} else {

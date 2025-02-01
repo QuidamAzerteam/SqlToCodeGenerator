@@ -20,11 +20,13 @@ jobs:
       - name: 🐞 Setup PHP with Xdebug
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '8.3'
           coverage: xdebug
 
       - name: 🎼 Composer
         uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
 
       - name: ✔ PHPUnit tests
         run: vendor/bin/phpunit --configuration=tests/phpunit.xml
