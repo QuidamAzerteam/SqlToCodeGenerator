@@ -25,6 +25,8 @@ jobs:
 
       - name: 🎼 Composer
         uses: php-actions/composer@v6
+        with:
+          php_version: 8.3
 
       - name: ✔ PHPUnit tests
         run: vendor/bin/phpunit --configuration=tests/phpunit.xml
