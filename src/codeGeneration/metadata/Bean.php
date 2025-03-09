@@ -49,7 +49,8 @@ class Bean {
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
 				docLines: ['Bean of `' . $this->sqlDatabase . '.' . $this->sqlTable . '`'],
-				imports: ['InvalidArgumentException'],
+				imports: ['SqlToCodeGenerator\common\bean\CommonBean'],
+				extends: 'CommonBean',
 		);
 
 		$propertyNamesIndexed = [];
@@ -75,34 +76,6 @@ class Bean {
 				$classBuilder->addFieldBuilders($fieldBuilder);
 			}
 		}
-
-		// TODO UNIT TESTS
-		$castAsChildClass = FunctionBuilder::create(
-				name: 'castAsChildClass',
-				returnType: 'mixed',
-		)->addParameterBuilders(FunctionParameterBuilder::create(
-				name: 'newClass',
-				type: 'string',
-		))->addLines(
-				Line::create("if (!is_subclass_of(\$newClass, static::class)) {"),
-				Line::create("throw new InvalidArgumentException('Can\'t change class hierarchy, you must cast to a child class');", 1),
-				Line::create("}", -1),
-				Line::create("\$obj = new \$newClass;"),
-				Line::create("foreach (get_object_vars(\$this) as \$key => \$name) {"),
-				Line::create("\$obj->\$key = \$name;", 1),
-				Line::create("}", -1),
-				Line::create("return \$obj;"),
-		);
-		$classBuilder->addFunctionBuilders($castAsChildClass);
-
-		// TODO UNIT TESTS AND PUT PRIMARY INSTEAD OF ID
-		$toStringFunctionBuilder = FunctionBuilder::create(
-				name: '__toString',
-				returnType: 'string',
-		)->addLines(
-				Line::create("return (string) \$this->id;"),
-		);
-		$classBuilder->addFunctionBuilders($toStringFunctionBuilder);
 
 		return $classBuilder->getPhpFileContent();
 	}
