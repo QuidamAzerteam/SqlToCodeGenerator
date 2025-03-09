@@ -40,6 +40,8 @@ class BeanTest extends TestCase {
 				namespace: 'beanNamespace',
 				name: $bean->getClassName(),
 				docLines: ['Bean of `sqlDatabase.sqlTable`'],
+				imports: ['SqlToCodeGenerator\common\bean\CommonBean'],
+				extends: 'CommonBean',
 		)->addFieldBuilders($fieldBuilder);
 
 		$this->assertSame(
@@ -90,6 +92,8 @@ class BeanTest extends TestCase {
 				namespace: 'beanNamespace',
 				name: $bean->getClassName(),
 				docLines: ['Bean of `sqlDatabase.sqlTable`'],
+				imports: ['SqlToCodeGenerator\common\bean\CommonBean'],
+				extends: 'CommonBean',
 		)->addFieldBuilders($fieldBuilder);
 
 		$this->assertSame(

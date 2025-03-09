@@ -49,6 +49,8 @@ class Bean {
 				namespace: $this->beanNamespace,
 				name: $this->getClassName(),
 				docLines: ['Bean of `' . $this->sqlDatabase . '.' . $this->sqlTable . '`'],
+				imports: ['SqlToCodeGenerator\common\bean\CommonBean'],
+				extends: 'CommonBean',
 		);
 
 		$propertyNamesIndexed = [];

@@ -88,6 +88,14 @@ abstract class SqlDao {
 		)->fetchAll();
 	}
 
+	public function prepareQuery(string $query): SqlPrepareStatement {
+		return new SqlPrepareStatement($this->getPdo()->prepare($query));
+	}
+
+	public function executePrepare(SqlPrepareStatement $sqlPrepareStatement): array {
+		return $sqlPrepareStatement->executeAndFetch(PDO::FETCH_ASSOC);
+	}
+
 	/**
 	 * @return string[]
 	 */
@@ -363,20 +371,29 @@ abstract class SqlDao {
 			VALUES ($sqlValuesAsSql)
 			SQL;
 
-		try {
-			$this->getPdo()->beginTransaction();
-
+		if ($this->getPdo()->inTransaction()) {
 			$this->getPdo()->exec($updateQuery);
 
 			if ($primaryReflectionProperty !== null) {
 				$primaryAttributeName = $primaryReflectionProperty->getName();
 				$item->$primaryAttributeName = $this->lastInsertedId();
 			}
+		} else {
+			try {
+				$this->getPdo()->beginTransaction();
 
-			$this->getPdo()->commit();
-		} catch (Exception $e) {
-			$this->getPdo()->rollBack();
-			throw $e;
+				$this->getPdo()->exec($updateQuery);
+
+				if ($primaryReflectionProperty !== null) {
+					$primaryAttributeName = $primaryReflectionProperty->getName();
+					$item->$primaryAttributeName = $this->lastInsertedId();
+				}
+
+				$this->getPdo()->commit();
+			} catch (Exception $e) {
+				$this->getPdo()->rollBack();
+				throw $e;
+			}
 		}
 	}
 

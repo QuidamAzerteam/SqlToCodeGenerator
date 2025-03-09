@@ -19,7 +19,7 @@ class FieldBuilder {
 	 * @param bool $isConst
 	 * @param string|null $customTypeHint
 	 * @param string[] $comments
-	 * @param ClassFieldEnum[] $classFieldEnum
+	 * @param ClassFieldEnum[] $classFieldEnums
 	 */
 	public function __construct(
 			private string $fieldName,
