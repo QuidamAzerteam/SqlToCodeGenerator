@@ -21,6 +21,7 @@ class ClassBuilder extends FileBuilder {
 			array $jsFunctionBuilders = [],
 			array $docLines = [],
 			private array $fieldBuilders = [],
+			private array $functionBuilders = [],
 	) {
 		parent::__construct(
 				basePackage: $basePackage,
@@ -36,10 +37,14 @@ class ClassBuilder extends FileBuilder {
 		foreach ($this->fieldBuilders as $fieldBuilder) {
 			CheckUtils::checkIfValueIsAClass($fieldBuilder, FieldBuilder::class);
 		}
+		foreach ($this->functionBuilders as $functionBuilder) {
+			CheckUtils::checkIfValueIsAClass($functionBuilder, FunctionBuilder::class);
+		}
 	}
 
 	/**
 	 * @param FieldBuilder[] $fieldBuilders
+	 * @param FunctionBuilder[] $functionBuilders
 	 * @see parent::create
 	 */
 	public static function create(
@@ -53,6 +58,7 @@ class ClassBuilder extends FileBuilder {
 			array $jsFunctionBuilders = [],
 			array $docLines = [],
 			array $fieldBuilders = [],
+			array $functionBuilders = [],
 	): static {
 		return new static(
 				basePackage: $basePackage,
@@ -65,6 +71,7 @@ class ClassBuilder extends FileBuilder {
 				jsFunctionBuilders: $jsFunctionBuilders,
 				docLines: $docLines,
 				fieldBuilders: $fieldBuilders,
+				functionBuilders: $functionBuilders,
 		);
 	}
 
@@ -73,17 +80,31 @@ class ClassBuilder extends FileBuilder {
 		return $this;
 	}
 
+	public function addFunctionBuilders(FunctionBuilder ...$functionBuilders): static {
+		array_push($this->functionBuilders, ...$functionBuilders);
+		return $this;
+	}
+
 	public function getFileTypeWithName(): string {
 		return "class $this->name";
 	}
 
 	public function getFieldsPhpFileContent(string $baseIndentation = ''): string {
-		return $this->fieldBuilders
+		$fieldBuildersAsPhp = $this->fieldBuilders
 				? implode("\n", array_map(
 						static fn(FieldBuilder $fieldBuilder): string => $fieldBuilder->getPhpFileContent($baseIndentation),
 						$this->fieldBuilders,
 				)) . "\n"
 				: '';
+
+		$functionBuildersAsPhp = $this->functionBuilders
+				? implode("\n", array_map(
+						static fn(FunctionBuilder $functionBuilder): string => $functionBuilder->getPhpFileContent($baseIndentation),
+						$this->functionBuilders,
+				))
+				: '';
+
+		return $fieldBuildersAsPhp . ($functionBuildersAsPhp ? "\n" . $functionBuildersAsPhp : '');
 	}
 
 	public function getFieldsJsFileContent(): string {
