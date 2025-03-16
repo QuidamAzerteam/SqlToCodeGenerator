@@ -1,8 +1,5 @@
 name: Tests
 
-env:
-  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-
 on:
   workflow_dispatch:
   pull_request:
@@ -18,8 +15,7 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ env.BRANCH_NAME }}
+          fetch-depth: 1
 
       - name: 🐞 Setup PHP with Xdebug
         uses: shivammathur/setup-php@v2
