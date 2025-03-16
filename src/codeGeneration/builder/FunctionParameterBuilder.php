@@ -4,12 +4,12 @@ namespace SqlToCodeGenerator\codeGeneration\builder;
 
 use SqlToCodeGenerator\codeGeneration\utils\CheckUtils;
 
-class FunctionParameterBuilder {
+readonly class FunctionParameterBuilder {
 
 	public function __construct(
-			private readonly string $type,
-			private readonly string $name,
-			private readonly ?string $defaultValue = null,
+			private string $type,
+			private string $name,
+			private ?string $defaultValue = null,
 	) {
 		CheckUtils::checkPhpType($type);
 		CheckUtils::checkPhpFieldName($name);

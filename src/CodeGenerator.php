@@ -12,7 +12,7 @@ use SqlToCodeGenerator\sql\PdoContainer;
 use SqlToCodeGenerator\sqlToMetaCode\dao\SqlToMetaCodeDao;
 use SqlToCodeGenerator\utils\FileUtils;
 
-class CodeGenerator {
+readonly class CodeGenerator {
 
 	/**
 	 * @param SqlToMetaCodeDao $sqlToMetaCodeDao
@@ -29,16 +29,16 @@ class CodeGenerator {
 	 * @param string|null $testDirName Set as null to avoid generating tests
 	 */
 	public function __construct(
-			private readonly SqlToMetaCodeDao $sqlToMetaCodeDao,
-			private readonly LoggerInterface $log,
-			private readonly string $basePackage,
-			private readonly string $phpSourceDirectory,
-			private readonly ?string $jsSourceDirectory = null,
-			private readonly string $genDirName = 'gen',
-			private readonly string $beanDirName = 'bean',
-			private readonly string $enumsDirName = 'enums',
-			private readonly string $daoDirName = 'dao',
-			private readonly ?string $testDirName = 'tests',
+			private SqlToMetaCodeDao $sqlToMetaCodeDao,
+			private LoggerInterface $log,
+			private string $basePackage,
+			private string $phpSourceDirectory,
+			private ?string $jsSourceDirectory = null,
+			private string $genDirName = 'gen',
+			private string $beanDirName = 'bean',
+			private string $enumsDirName = 'enums',
+			private string $daoDirName = 'dao',
+			private ?string $testDirName = 'tests',
 	) {
 		self::checkDirectory($phpSourceDirectory);
 		if ($jsSourceDirectory !== null) {

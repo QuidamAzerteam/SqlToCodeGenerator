@@ -2,31 +2,31 @@
 
 namespace SqlToCodeGenerator\sqlToMetaCode\bean;
 
-class Column {
+readonly class Column {
 
 	public function __construct(
-			public readonly string $tableCatalog,
-			public readonly string $tableSchema,
-			public readonly string $tableName,
-			public readonly string $columnName,
-			public readonly int $ordinalPosition,
-			public readonly ?string $columnDefault,
-			public readonly string $isNullable,
-			public readonly string $dataType,
-			public readonly ?int $characterMaximumLength,
-			public readonly ?int $characterOctetLength,
-			public readonly ?int $numericPrecision,
-			public readonly ?int $numericScale,
-			public readonly ?int $datetimePrecision,
-			public readonly ?string $characterSetName,
-			public readonly ?string $collationName,
-			public readonly string $columnType,
-			public readonly string $columnKey,
-			public readonly string $extra,
-			public readonly string $privileges,
-			public readonly string $columnComment,
-			public readonly string $isGenerated,
-			public readonly ?string $generationExpression,
+			public string $tableCatalog,
+			public string $tableSchema,
+			public string $tableName,
+			public string $columnName,
+			public int $ordinalPosition,
+			public ?string $columnDefault,
+			public string $isNullable,
+			public string $dataType,
+			public ?int $characterMaximumLength,
+			public ?int $characterOctetLength,
+			public ?int $numericPrecision,
+			public ?int $numericScale,
+			public ?int $datetimePrecision,
+			public ?string $characterSetName,
+			public ?string $collationName,
+			public string $columnType,
+			public string $columnKey,
+			public string $extra,
+			public string $privileges,
+			public string $columnComment,
+			public string $isGenerated,
+			public ?string $generationExpression,
 	) {}
 
 	public function getTableUniqueIdentifier(): string {

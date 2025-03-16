@@ -10,7 +10,11 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"SqlToCodeGenerator\\": "src",
+			"SqlToCodeGenerator\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
 			"SqlToCodeGenerator\\test\\": "tests"
 		}
 	},

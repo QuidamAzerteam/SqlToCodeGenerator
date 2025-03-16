@@ -11,7 +11,7 @@ use SqlToCodeGenerator\sqlToMetaCode\bean\KeyColumnUsage;
 use SqlToCodeGenerator\sqlToMetaCode\bean\Table;
 use SqlToCodeGenerator\sqlToMetaCode\SqlToMetaCodeUtils;
 
-class SqlToMetaCodeDao {
+readonly class SqlToMetaCodeDao {
 
 	/**
 	 * @param PdoContainer $pdoContainer
@@ -19,9 +19,9 @@ class SqlToMetaCodeDao {
 	 * @param string[] $tablesToIgnore SQL tables to ignore
 	 */
 	public function __construct(
-			private readonly PdoContainer $pdoContainer,
-			private readonly string $bdd,
-			private readonly array $tablesToIgnore = [],
+			private PdoContainer $pdoContainer,
+			private string $bdd,
+			private array $tablesToIgnore = [],
 	) {}
 
 	private function getTableNameNoIntSql(string $tableNameCol): string {

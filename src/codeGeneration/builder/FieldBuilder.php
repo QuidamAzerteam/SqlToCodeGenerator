@@ -69,9 +69,10 @@ class FieldBuilder {
 		return $this->fieldName;
 	}
 
-	public function setFieldName(string $fieldName): void {
+	public function setFieldName(string $fieldName): static {
 		CheckUtils::checkPhpFieldName($fieldName);
 		$this->fieldName = $fieldName;
+		return $this;
 	}
 
 	public function doesDefaultValueExists(): bool {

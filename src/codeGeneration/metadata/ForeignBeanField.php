@@ -23,7 +23,8 @@ class ForeignBeanField {
 					->setDefaultValue('[]')
 					->setCustomTypeHint($this->toBean->getClassName() . '[]');
 		} else {
-			$foreignBeanFieldBuilder = FieldBuilder::create(lcfirst(SqlDao::sqlToCamelCase($this->withProperty->getSqlNameWithoutId())))
+			$fieldName = lcfirst(SqlDao::sqlToCamelCase($this->withProperty->getSqlNameWithoutId()));
+			$foreignBeanFieldBuilder = FieldBuilder::create($fieldName)
 					->setPhpType($this->toBean->getClassName())
 					->setIsNullable($this->withProperty->isNullable);
 		}
@@ -32,10 +33,12 @@ class ForeignBeanField {
 
 	public function getAsFieldBuilderForJs(): FieldBuilder {
 		if ($this->isArray) {
-			$foreignBeanFieldBuilder = FieldBuilder::create(VariableUtils::getPluralOfVarName(lcfirst($this->toBean->getClassName())))
+			$fieldName = VariableUtils::getPluralOfVarName(lcfirst($this->toBean->getClassName()));
+			$foreignBeanFieldBuilder = FieldBuilder::create($fieldName)
 					->setJsType($this->toBean->getClassName() . '[]');
 		} else {
-			$foreignBeanFieldBuilder = FieldBuilder::create(lcfirst(SqlDao::sqlToCamelCase($this->withProperty->getSqlNameWithoutId())))
+			$fieldName = lcfirst(SqlDao::sqlToCamelCase($this->withProperty->getSqlNameWithoutId()));
+			$foreignBeanFieldBuilder = FieldBuilder::create($fieldName)
 					->setJsType($this->toBean->getClassName())
 					->setIsNullable($this->withProperty->isNullable);
 		}

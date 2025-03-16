@@ -5,12 +5,11 @@ namespace SqlToCodeGenerator\common\bean;
 use InvalidArgumentException;
 use LogicException;
 use ReflectionClass;
+use SqlToCodeGenerator\codeGeneration\attribute\ClassField;
 use SqlToCodeGenerator\codeGeneration\attribute\ClassFieldEnum;
-use SqlToCodeGenerator\codeGeneration\metadata\BeanPropertyColKey;
 
 abstract class CommonBean {
 
-	// TODO Add unit tests for this
 	public function castAsChildClass(string $newClass): mixed {
 		if (!is_subclass_of($newClass, static::class)) {
 			throw new InvalidArgumentException('Can\'t change class hierarchy, you must cast to a child class');
@@ -22,29 +21,29 @@ abstract class CommonBean {
 		return $obj;
 	}
 
-	// TODO Add unit tests for this
 	public function __toString(): string {
-		static $firstUniqueField = null;
+		static $firstUniqueFieldPropertyByClassName = [];
 
-		if ($firstUniqueField === null) {
+		$firstUniqueFieldPropertyName = $firstUniqueFieldPropertyByClassName[static::class] ?? null;
+		if ($firstUniqueFieldPropertyName === null) {
 			$classFields = (new ReflectionClass(static::class))->getProperties();
 			foreach ($classFields as $field) {
-				$attributes = $field->getAttributes(ClassFieldEnum::class);
+				$attributes = $field->getAttributes(ClassField::class);
 				foreach ($attributes as $attribute) {
-					if (in_array($attribute->getArguments()[0], [BeanPropertyColKey::PRI, BeanPropertyColKey::UNI], true)) {
-						$firstUniqueField = $field;
+					if (in_array($attribute->getArguments()[0], [ClassFieldEnum::PRIMARY, ClassFieldEnum::UNIQUE], true)) {
+						$firstUniqueFieldPropertyName = $field->name;
 						break 2;
 					}
 				}
 			}
 		}
 
-		if ($firstUniqueField === null) {
+		if ($firstUniqueFieldPropertyName === null) {
 			throw new LogicException('No unique field, so no way to uniquely toString the object');
 		}
+		$firstUniqueFieldPropertyByClassName[static::class] = $firstUniqueFieldPropertyName;
 
-
-		return (string) $this->$firstUniqueField;
+		return (string) $this->$firstUniqueFieldPropertyName;
 	}
 	
 }
