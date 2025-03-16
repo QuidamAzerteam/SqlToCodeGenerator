@@ -2,21 +2,21 @@
 
 namespace SqlToCodeGenerator\sqlToMetaCode\bean;
 
-class KeyColumnUsage {
+readonly class KeyColumnUsage {
 
 	public function __construct(
-			public readonly string $constraintCatalog,
-			public readonly string $constraintSchema,
-			public readonly string $constraintName,
-			public readonly string $tableCatalog,
-			public readonly string $tableSchema,
-			public readonly string $tableName,
-			public readonly string $columnName,
-			public readonly int $ordinalPosition,
-			public readonly ?int $positionInUniqueConstraint,
-			public readonly ?string $referencedTableSchema,
-			public readonly ?string $referencedTableName,
-			public readonly ?string $referencedColumnName,
+			public string $constraintCatalog,
+			public string $constraintSchema,
+			public string $constraintName,
+			public string $tableCatalog,
+			public string $tableSchema,
+			public string $tableName,
+			public string $columnName,
+			public int $ordinalPosition,
+			public ?int $positionInUniqueConstraint,
+			public ?string $referencedTableSchema,
+			public ?string $referencedTableName,
+			public ?string $referencedColumnName,
 	) {}
 
 	public function getFromColumnUniqueIdentifier(): string {

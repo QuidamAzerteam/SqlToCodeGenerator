@@ -4,10 +4,10 @@ namespace SqlToCodeGenerator\codeGeneration\attribute;
 
 use Attribute;
 
-#[Attribute] class ClassField {
+#[Attribute] readonly class ClassField {
 
 	/** @var ClassFieldEnum[] */
-	public readonly array $classFieldEnums;
+	public array $classFieldEnums;
 
 	public function __construct(
 			ClassFieldEnum ...$classFieldEnums,

@@ -273,6 +273,25 @@ class ClassBuilderPhpTest extends TestCase {
 		);
 	}
 
+	#[Depends('testNoFieldsPhpFileContent')]
+	public function testFunctionsPhpFileContent(): void {
+		$functionBuilder = $this->getMockBuilder(FunctionBuilder::class)
+				->disableOriginalConstructor()
+				->getMock();
+		$functionBuilder->method('getPhpFileContent')->willReturn('test');
+
+		$classBuilder = ClassBuilder::create(
+				basePackage: 'basePackage',
+				namespace: 'namespace',
+				name: 'name',
+		)->addFunctionBuilders($functionBuilder);
+
+		$this->assertSame(
+				"\ntest",
+				$classBuilder->getFieldsPhpFileContent(),
+		);
+	}
+
 	#[Depends('testMinimal')]
 	public function testPhpFieldBuilders(): void {
 		$fieldBuilder = $this->getMockBuilder(FieldBuilder::class)

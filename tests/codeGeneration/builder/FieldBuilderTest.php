@@ -61,4 +61,15 @@ class FieldBuilderTest extends TestCase {
 		$this->assertFalse($fieldBuilderNotNullable->isNullable());
 	}
 
+	public function testGetFieldName(): void {
+		$fieldBuilder = FieldBuilder::create('test');
+		$this->assertSame('test', $fieldBuilder->getFieldName());
+	}
+
+	public function testSetFieldNameChain(): void {
+		$fieldBuilder = FieldBuilder::create('test');
+		$this->assertSame($fieldBuilder, $fieldBuilder->setFieldName('test2'));
+		$this->assertSame('test2', $fieldBuilder->getFieldName());
+	}
+
 }

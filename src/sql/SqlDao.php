@@ -29,6 +29,50 @@ abstract class SqlDao {
 	abstract protected function getTable(): string;
 
 	/**
+	 * @param mixed $colValue
+	 * @param string $field
+	 * @param ReflectionObject $itemReflection
+	 * @return mixed
+	 */
+	public function getItemFieldValue(mixed $colValue, string $field, ReflectionObject $itemReflection): mixed {
+		if ($colValue === null) {
+			return null;
+		}
+		$property = $itemReflection->getProperty($field);
+		// https://www.php.net/manual/en/language.types.declarations.php
+		$typeName = $property->getType()?->getName();
+
+		if (in_array($typeName, self::getNotPdoCompatibleTypes(), true)) {
+			throw new LogicException("PDO cannot return $typeName");
+		}
+		return match ($typeName) {
+			'bool' => (bool) $colValue,
+			'float' => (float) $colValue,
+			'int' => (int) $colValue,
+			'string' => (string) $colValue,
+			'DateTime' => new DateTime($colValue),
+
+			default => (static function () use ($colValue, $typeName) {
+				try {
+					$maybeItsAClass = new ReflectionClass($typeName);
+					if ($maybeItsAClass->isEnum()) {
+						foreach ($maybeItsAClass->getMethod('cases')->invoke(null) as $case) {
+							if ($case->name === $colValue) {
+								return $case;
+							}
+						}
+						throw new LogicException("Value '$colValue' not found in enum: $typeName");
+					}
+				} catch (ReflectionException) {
+					// Ignore catch
+				}
+
+				throw new LogicException("PDO type return not implemented: $typeName");
+			})()
+		};
+	}
+
+	/**
 	 * @return class-string<T>
 	 */
 	abstract protected function getClass(): string;
@@ -143,43 +187,7 @@ abstract class SqlDao {
 			foreach ($row as $colKey => $colValue) {
 				$field = lcfirst(static::sqlToCamelCase($colKey));
 
-				if ($colValue === null) {
-					$item->$field = null;
-				} else {
-					$property = $itemReflection->getProperty($field);
-					// https://www.php.net/manual/en/language.types.declarations.php
-					$typeName = $property->getType()?->getName();
-
-					if (in_array($typeName, self::getNotPdoCompatibleTypes(), true)) {
-						throw new LogicException("PDO cannot return $typeName");
-					}
-
-					$item->$field = match ($typeName) {
-						'bool' => (bool) $colValue,
-						'float' => (float) $colValue,
-						'int' => (int) $colValue,
-						'string' => (string) $colValue,
-						'DateTime' => new DateTime($colValue),
-
-						default => (static function () use ($colValue, $typeName) {
-							try {
-								$maybeItsAClass = new ReflectionClass($typeName);
-								if ($maybeItsAClass->isEnum()) {
-									foreach ($maybeItsAClass->getMethod('cases')->invoke(null) as $case) {
-										if ($case->name === $colValue) {
-											return $case;
-										}
-									}
-									throw new LogicException("Value '$colValue' not found in enum: $typeName");
-								}
-							} catch (ReflectionException) {
-								// Ignore catch
-							}
-
-							throw new LogicException("PDO type return not implemented: $typeName");
-						})()
-					};
-				}
+				$item->$field = $this->getItemFieldValue($colValue, $field, $itemReflection);
 			}
 			$items[] = $item;
 		}
@@ -264,7 +272,8 @@ abstract class SqlDao {
 		}
 		foreach ($existingElements as $existingElement) {
 			foreach ($fieldsAttributesToUpdate as $fieldAttribute) {
-				$elementsByUniqueFieldsKey[$uniqueKeyFromElement($existingElement)]->$fieldAttribute = $existingElement->$fieldAttribute;
+				$elementsByUniqueFieldsKey[$uniqueKeyFromElement($existingElement)]->$fieldAttribute
+						= $existingElement->$fieldAttribute;
 			}
 		}
 	}

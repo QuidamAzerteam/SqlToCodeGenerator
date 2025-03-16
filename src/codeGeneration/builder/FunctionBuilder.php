@@ -107,6 +107,7 @@ class FunctionBuilder {
 			}
 			return "$fileContent$baseIndentation}";
 		}
+
 		return $fileContent . "}";
 	}
 

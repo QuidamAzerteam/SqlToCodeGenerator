@@ -369,8 +369,8 @@ class Bean {
 				);
 			} else {
 				$completeFunctionBuilder->addLines(
-						Line::create("\$$arrayParameterName->" . lcfirst($classNameInMethod) . " ="
-								. " \$fkElementsByFkProperty[\$$arrayParameterName->$foreignBeanWithPropertyName][0] ?? null;", 1),
+						Line::create("\$$arrayParameterName->" . lcfirst($classNameInMethod)
+								. " = \$fkElementsByFkProperty[\$$arrayParameterName->$foreignBeanWithPropertyName][0] ?? null;", 1),
 				);
 			}
 			$completeFunctionBuilder->addLines(Line::create("}", -1));
