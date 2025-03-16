@@ -4,7 +4,7 @@ namespace SqlToCodeGenerator\codeGeneration\utils;
 
 final class VariableUtils {
 
-	public static function getPluralOfVarName($var): string {
+	public static function getPluralOfVarName(string $var): string {
 		// Some exceptions first
 		$exceptionsForPlural = [
 			'data' => 'dataList',

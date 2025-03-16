@@ -39,7 +39,8 @@ class BeanProperty {
 	public function getFieldBuilder(): FieldBuilder {
 		$fieldBuilder = FieldBuilder::create($this->getName())
 				->setPhpType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getPhpType($this->propertyType))
-				->setJsType($this->enum ? $this->enum->getFullName() : BeanPropertyType::getJsType($this->propertyType))
+				// TODO Better enum js handling
+				->setJsType($this->enum ? '*' : BeanPropertyType::getJsType($this->propertyType))
 				->setIsNullable($this->isNullable || $this->columnKey === BeanPropertyColKey::PRI)
 				->addClassFieldEnums($this->columnKey?->toClassFieldEnum());
 
@@ -56,7 +57,7 @@ class BeanProperty {
 		}
 		$fieldBuilder->setDefaultValue($defaultValue);
 
-		if ($this->columnKey) {
+		if ($this->columnKey === BeanPropertyColKey::MUL) {
 			$fieldBuilder->addComments($this->columnKey->toHumanReadableString() . ' key');
 		}
 		if ($this->sqlComment) {

@@ -212,7 +212,7 @@ class FieldBuilder {
 
 		$fileContent = "$prependLinesBy/** @type {{$jsTypeWithNullableString}} */\n";
 		$fileContent .= $prependLinesBy . $this->fieldName;
-		if ($this->doesDefaultValueExists()) {
+		if ($this->doesDefaultValueExists() && !str_contains($this->defaultValue, '\\')) {
 			$fileContent .= " = $this->defaultValue";
 		} else if ($this->isNullable()) {
 			$fileContent .= ' = null';

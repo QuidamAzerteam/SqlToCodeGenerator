@@ -45,7 +45,7 @@ class ForeignBeanFieldTest extends TestCase {
 		$foreignBeanField->isArray = true;
 
 		$this->assertSame(
-				FieldBuilder::create(lcfirst(VariableUtils::getPluralOfVarName('IAmAClass')))
+				FieldBuilder::create('iAmAClassListViaTheirSqlName')
 						->setPhpType('array')
 						->setDefaultValue('[]')
 						->setCustomTypeHint('IAmAClass[]')
@@ -54,7 +54,7 @@ class ForeignBeanFieldTest extends TestCase {
 						->getPhpFileContent(),
 		);
 		$this->assertSame(
-				FieldBuilder::create(lcfirst(VariableUtils::getPluralOfVarName('IAmAClass')))
+				FieldBuilder::create('iAmAClassListViaTheirSqlName')
 						->setJsType('IAmAClass[]')
 						->getJsFileContent(),
 				$foreignBeanField->getAsFieldBuilderForJs()
