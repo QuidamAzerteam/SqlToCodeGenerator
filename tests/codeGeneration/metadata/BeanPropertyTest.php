@@ -116,7 +116,6 @@ class BeanPropertyTest extends TestCase {
 				->setJsType(BeanPropertyType::getJsType($beanProperty->propertyType))
 				->setIsNullable(true)
 				->setDefaultValue('null')
-				->addComments(BeanPropertyColKey::PRI->toHumanReadableString() . ' key')
 				->addClassFieldEnums(BeanPropertyColKey::PRI->toClassFieldEnum());
 		$this->assertSame(
 				$fieldBuilder->getPhpFileContent(),
@@ -139,8 +138,30 @@ class BeanPropertyTest extends TestCase {
 				->setPhpType(BeanPropertyType::getPhpType($beanProperty->propertyType))
 				->setJsType(BeanPropertyType::getJsType($beanProperty->propertyType))
 				->setIsNullable(false)
-				->addComments(BeanPropertyColKey::UNI->toHumanReadableString() . ' key')
 				->addClassFieldEnums(BeanPropertyColKey::UNI->toClassFieldEnum());
+		$this->assertSame(
+				$fieldBuilder->getPhpFileContent(),
+				$beanProperty->getFieldBuilder()->getPhpFileContent(),
+		);
+		$this->assertSame(
+				$fieldBuilder->getJsFileContent(),
+				$beanProperty->getFieldBuilder()->getJsFileContent(),
+		);
+	}
+
+	public function testFieldBuilderAsMultiple(): void {
+		$beanProperty = new BeanProperty();
+		$beanProperty->sqlName = 'test';
+		$beanProperty->isNullable = false;
+		$beanProperty->propertyType = BeanPropertyType::STRING;
+		$beanProperty->columnKey = BeanPropertyColKey::MUL;
+
+		$fieldBuilder = FieldBuilder::create($beanProperty->getName())
+				->setPhpType(BeanPropertyType::getPhpType($beanProperty->propertyType))
+				->setJsType(BeanPropertyType::getJsType($beanProperty->propertyType))
+				->setIsNullable(false)
+				->addComments(BeanPropertyColKey::MUL->toHumanReadableString() . ' key')
+				->addClassFieldEnums(BeanPropertyColKey::MUL->toClassFieldEnum());
 		$this->assertSame(
 				$fieldBuilder->getPhpFileContent(),
 				$beanProperty->getFieldBuilder()->getPhpFileContent(),

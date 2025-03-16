@@ -41,10 +41,10 @@ class ForeignBeanField {
 
 	public function getFieldName(): string {
 		return $this->isArray
-				? VariableUtils::getPluralOfVarName(lcfirst(
-						$this->toBean->getClassName()
-						. 'From' . ucfirst(SqlDao::sqlToCamelCase($this->onProperty->sqlName))
-				))
+				? lcfirst(
+						VariableUtils::getPluralOfVarName($this->toBean->getClassName())
+						. 'ViaTheir' . ucfirst(SqlDao::sqlToCamelCase($this->onProperty->sqlName))
+				)
 				: lcfirst(SqlDao::sqlToCamelCase($this->withProperty->getSqlNameWithoutId()));
 	}
 

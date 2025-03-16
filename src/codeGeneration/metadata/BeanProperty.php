@@ -57,7 +57,7 @@ class BeanProperty {
 		}
 		$fieldBuilder->setDefaultValue($defaultValue);
 
-		if ($this->columnKey) {
+		if ($this->columnKey === BeanPropertyColKey::MUL) {
 			$fieldBuilder->addComments($this->columnKey->toHumanReadableString() . ' key');
 		}
 		if ($this->sqlComment) {
