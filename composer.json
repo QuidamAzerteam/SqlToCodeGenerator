@@ -20,7 +20,7 @@
 	},
 	"require-dev": {
 		"roave/security-advisories": "dev-latest",
-		"phpunit/phpunit": "^11"
+		"phpunit/phpunit": "^12"
 	},
 	"require": {
 		"php": "8.3.*",
